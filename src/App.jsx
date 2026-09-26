@@ -363,6 +363,8 @@ export default function App() {
           if (gameMode === 'survival' && totalErrors + 1 >= 3) {
             setGlamourScore(10);
             finishGame();
+          } else if (nextInput.length >= targetText.length) {
+            finishGame();
           }
         }
       }
@@ -457,6 +459,10 @@ export default function App() {
           lastErrorTrigger={lastErrorTrigger}
           glamourScore={glamourScore}
           onOpenCustomPhotos={() => setShowAvatarModal(true)}
+          onRestart={() => resetGame()}
+          onNextLesson={handleNextLesson}
+          hasNextLesson={currentLesson.number < 685}
+          onShowResults={() => setShowResults(true)}
         />
 
         {/* Virtual Keyboard */}

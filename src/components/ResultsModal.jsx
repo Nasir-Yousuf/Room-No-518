@@ -168,21 +168,47 @@ export default function ResultsModal({
     }
   }, [stars]);
 
+  // Global Keyboard Shortcuts for Results View
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (hasNextLesson && onNextLesson) {
+          onNextLesson();
+        } else if (onRestart) {
+          onRestart();
+        }
+      } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        if (onRestart) onRestart();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        if (onBackToLessons) onBackToLessons();
+        else if (onClose) onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, hasNextLesson, onNextLesson, onRestart, onBackToLessons, onClose]);
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col text-white select-none animate-fadeIn overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Background effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-40 left-1/4 w-96 h-96 bg-indigo-600/8 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-600/8 rounded-full blur-3xl" />
+        <div className="absolute -top-40 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl" />
       </div>
 
       {/* Top Header */}
-      <header className="w-full glass-strong px-4 sm:px-8 py-3 flex items-center justify-between z-10">
+      <header className="w-full glass-strong px-4 sm:px-8 py-3 flex items-center justify-between z-20 flex-shrink-0 border-b border-white/10">
         <div className="flex items-center gap-3">
           <button
             onClick={onBackToLessons || onClose}
             className="p-2 rounded-xl glass-light text-slate-400 hover:text-white transition cursor-pointer"
-            title="Return to Curriculum"
+            title="Return to Curriculum (Esc)"
           >
             <X className="w-4 h-4" />
           </button>
@@ -190,12 +216,42 @@ export default function ResultsModal({
             Lesson {currentLesson.number}: {currentLesson.title}
           </h1>
         </div>
+
+        {/* Top-Right Quick Action Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRestart}
+            className="px-3 py-1.5 glass-light hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:text-emerald-500 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+            title="Try Again (Press R)"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Try Again</span>
+          </button>
+
+          {hasNextLesson ? (
+            <button
+              onClick={onNextLesson}
+              className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-indigo-500/20 active:scale-95"
+              title="Next Lesson (Press Enter)"
+            >
+              <span>Next Lesson</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          ) : (
+            <button
+              onClick={onBackToLessons || onClose}
+              className="px-3.5 py-1.5 glass-light text-slate-200 hover:text-white rounded-xl text-xs font-bold transition cursor-pointer"
+            >
+              Curriculum
+            </button>
+          )}
+        </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-4xl mx-auto w-full relative z-10">
+      {/* Main Content (Scrollable so buttons & stats never get clipped) */}
+      <main className="flex-1 overflow-y-auto px-4 py-4 sm:py-6 max-w-3xl mx-auto w-full relative z-10 flex flex-col items-center">
         {/* Performance Badge */}
-        <div className="flex items-center gap-2 mb-4 animate-fadeInUp">
+        <div className="flex items-center gap-2 mb-2 animate-fadeInUp">
           <span className="text-3xl">{perf.icon}</span>
           <span className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: perf.color }}>
             {perf.label}
@@ -203,16 +259,16 @@ export default function ResultsModal({
         </div>
 
         {/* Stars Arc */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 mb-8">
+        <div className="flex items-center justify-center gap-2 sm:gap-3 mb-5">
           {[0, 1, 2, 3, 4].map((idx) => (
             <div
               key={idx}
               style={{
-                transform: `translateY(${Math.abs(idx - 2) * 6}px) rotate(${(idx - 2) * 6}deg)`
+                transform: `translateY(${Math.abs(idx - 2) * 5}px) rotate(${(idx - 2) * 5}deg)`
               }}
             >
               <ResultStar
-                size={idx === 2 ? 48 : 38}
+                size={idx === 2 ? 46 : 36}
                 earned={idx < stars}
                 delay={idx * 150}
               />
@@ -222,7 +278,7 @@ export default function ResultsModal({
 
         {/* Tier Photo Achievement Badge */}
         <div
-          className="flex items-center gap-3.5 glass-card px-5 py-3 rounded-2xl mb-7 animate-fadeInUp border max-w-md w-full justify-between"
+          className="flex items-center gap-3.5 glass-card px-4 sm:px-5 py-3 rounded-2xl mb-4 animate-fadeInUp border max-w-md w-full justify-between"
           style={{
             borderColor: `${tierObj.themeColor}50`,
             boxShadow: `0 8px 25px ${tierObj.themeColor}20`
@@ -230,7 +286,7 @@ export default function ResultsModal({
         >
           <div className="flex items-center gap-3">
             <div
-              className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 flex-shrink-0 shadow-lg"
+              className="relative w-13 h-13 sm:w-15 sm:h-15 rounded-2xl overflow-hidden border-2 flex-shrink-0 shadow-lg"
               style={{ borderColor: tierObj.themeColor }}
             >
               <img
@@ -266,22 +322,54 @@ export default function ResultsModal({
           </div>
         </div>
 
-        {/* Score */}
-        <div className="text-center mb-8 animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
-          <span className="text-5xl sm:text-6xl font-black text-white font-mono gradient-text">
+        {/* Points Score */}
+        <div className="text-center mb-5 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+          <span className="text-4xl sm:text-5xl font-black text-white font-mono gradient-text">
             {calculatedPoints}
           </span>
-          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Points Earned</p>
+          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Points Earned</p>
+        </div>
+
+        {/* ─── PRIMARY IN-VIEW ACTION BUTTONS (Always in Front of User's Eyes) ─── */}
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-6 w-full max-w-md animate-fadeInUp" style={{ animationDelay: '0.25s' }}>
+          {hasNextLesson ? (
+            <button
+              onClick={onNextLesson}
+              className="flex-1 min-w-[170px] py-3.5 px-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-2xl text-base shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+            >
+              <span>Next Lesson</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <span className="text-[10px] font-mono font-semibold opacity-75 hidden sm:inline px-1.5 py-0.5 rounded bg-white/20">↵ Enter</span>
+            </button>
+          ) : (
+            <button
+              onClick={onBackToLessons || onClose}
+              className="flex-1 min-w-[170px] py-3.5 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-2xl text-base shadow-xl shadow-indigo-500/30 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span>Curriculum Map</span>
+              <ChevronDown className="w-5 h-5" />
+            </button>
+          )}
+
+          <button
+            onClick={onRestart}
+            className="flex-1 min-w-[140px] py-3.5 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-2xl text-base shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+          >
+            <RotateCcw className="w-4 h-4 group-hover:rotate-[-180deg] transition-transform duration-500" />
+            <span>Try Again</span>
+            <span className="text-[10px] font-mono font-semibold opacity-75 hidden sm:inline px-1.5 py-0.5 rounded bg-white/20">R</span>
+          </button>
         </div>
 
         {/* Circular Gauges */}
-        <div className="grid grid-cols-3 gap-6 sm:gap-10 items-start w-full max-w-2xl mb-8 animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+        <div className="grid grid-cols-3 gap-4 sm:gap-8 items-start w-full max-w-xl mb-6 animate-fadeInUp" style={{ animationDelay: '0.35s' }}>
           <CircularGauge
             value={accuracy}
             maxValue={100}
             label="Accuracy"
             unit="%"
             color={accuracy >= 90 ? '#34d399' : accuracy >= 70 ? '#facc15' : '#f87171'}
+            size={120}
           />
           <CircularGauge
             value={wpm}
@@ -289,12 +377,13 @@ export default function ResultsModal({
             label="Speed"
             unit=""
             color="#818cf8"
+            size={120}
           />
           <div className="flex flex-col items-center">
-            <div className="relative" style={{ width: 140, height: 140 }}>
+            <div className="relative" style={{ width: 120, height: 120 }}>
               <div className="absolute inset-0 flex flex-col items-center justify-center glass-card rounded-full">
-                <Clock className="w-5 h-5 text-slate-400 mb-1" />
-                <span className="text-2xl sm:text-3xl font-black font-mono" style={{ color: 'var(--text-heading)' }}>{formattedDuration}</span>
+                <Clock className="w-4 h-4 text-slate-400 mb-1" />
+                <span className="text-xl sm:text-2xl font-black font-mono" style={{ color: 'var(--text-heading)' }}>{formattedDuration}</span>
               </div>
             </div>
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-2">Duration</span>
@@ -302,60 +391,63 @@ export default function ResultsModal({
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-2xl animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
-          <div className="glass-light rounded-xl px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full max-w-xl mb-4 animate-fadeInUp" style={{ animationDelay: '0.45s' }}>
+          <div className="glass-light rounded-xl px-3 py-2.5 text-center">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
               <Flame className="w-3.5 h-3.5 text-orange-500" />
               <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">Peak Combo</span>
             </div>
-            <span className="text-xl font-black text-orange-600 dark:text-orange-300 font-mono">{peakCombo}x</span>
+            <span className="text-lg font-black text-orange-600 dark:text-orange-300 font-mono">{peakCombo}x</span>
           </div>
-          <div className="glass-light rounded-xl px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          <div className="glass-light rounded-xl px-3 py-2.5 text-center">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
               <X className="w-3.5 h-3.5 text-red-500" />
               <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">Errors</span>
             </div>
-            <span className="text-xl font-black text-red-600 dark:text-red-300 font-mono">{totalErrors}</span>
+            <span className="text-lg font-black text-red-600 dark:text-red-300 font-mono">{totalErrors}</span>
           </div>
-          <div className="glass-light rounded-xl px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          <div className="glass-light rounded-xl px-3 py-2.5 text-center">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
               <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
               <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">Stars</span>
             </div>
-            <span className="text-xl font-black text-amber-600 dark:text-amber-300 font-mono">{stars}/5</span>
+            <span className="text-lg font-black text-amber-600 dark:text-amber-300 font-mono">{stars}/5</span>
           </div>
-          <div className="glass-light rounded-xl px-4 py-3 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
+          <div className="glass-light rounded-xl px-3 py-2.5 text-center">
+            <div className="flex items-center justify-center gap-1 mb-0.5">
               <Trophy className="w-3.5 h-3.5 text-purple-500" />
               <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">Points</span>
             </div>
-            <span className="text-xl font-black text-purple-600 dark:text-purple-300 font-mono">{calculatedPoints}</span>
+            <span className="text-lg font-black text-purple-600 dark:text-purple-300 font-mono">{calculatedPoints}</span>
           </div>
         </div>
       </main>
 
-      {/* Bottom Action Bar */}
-      <footer className="w-full glass-strong px-4 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-3 z-20">
+      {/* ─── STICKY BOTTOM ACTION BAR (Guaranteed 100% visible on all screen sizes) ─── */}
+      <footer
+        className="w-full glass-strong px-4 sm:px-8 py-3 flex flex-wrap items-center justify-between gap-3 z-30 flex-shrink-0 sticky bottom-0 border-t border-white/10 shadow-2xl"
+        style={{ backgroundColor: 'var(--bg-glass-card)' }}
+      >
         {/* Left: Back to lessons */}
         <button
           onClick={onBackToLessons || onClose}
-          className="px-4 py-2.5 glass-light text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+          className="px-4 py-2 glass-light text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
         >
           <ChevronDown className="w-3.5 h-3.5" />
-          <span>Lessons</span>
+          <span>Lessons Map</span>
         </button>
 
-        {/* Center: Try Again + Feedback */}
+        {/* Center: Try Again */}
         <div className="flex items-center gap-3">
           <button
             onClick={onRestart}
-            className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+            className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Try Again</span>
           </button>
 
-          <p className="hidden sm:block text-xs text-slate-400 max-w-xs">
+          <p className="hidden md:block text-xs text-slate-400 max-w-xs">
             {stars >= 5
               ? 'Flawless! You mastered this lesson!'
               : accuracy >= 90
@@ -368,7 +460,7 @@ export default function ResultsModal({
         {hasNextLesson ? (
           <button
             onClick={onNextLesson}
-            className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+            className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-xl text-xs sm:text-sm shadow-lg shadow-indigo-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
           >
             <span>Next Lesson</span>
             <ArrowRight className="w-4 h-4" />
@@ -376,7 +468,7 @@ export default function ResultsModal({
         ) : (
           <button
             onClick={onBackToLessons || onClose}
-            className="px-6 py-2.5 glass-light text-slate-800 dark:text-white rounded-xl text-sm font-bold transition cursor-pointer"
+            className="px-5 py-2 glass-light text-slate-800 dark:text-white rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer"
           >
             Back to Map
           </button>
