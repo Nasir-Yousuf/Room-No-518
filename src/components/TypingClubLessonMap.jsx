@@ -97,7 +97,7 @@ export default function TypingClubLessonMap({
                 <Star
                   key={s}
                   className={`w-3.5 h-3.5 ${
-                    s <= (starsCount || 4)
+                    starsCount > 0 && s <= starsCount
                       ? 'text-amber-400 fill-amber-400 drop-shadow-[0_0_4px_#f59e0b]'
                       : 'text-slate-300'
                   }`}
@@ -127,7 +127,7 @@ export default function TypingClubLessonMap({
                 <Star
                   key={s}
                   className={`w-3.5 h-3.5 ${
-                    s <= (starsCount || 4)
+                    starsCount > 0 && s <= starsCount
                       ? 'text-amber-400 fill-amber-400 drop-shadow-[0_0_4px_#f59e0b]'
                       : 'text-slate-300'
                   }`}
@@ -161,7 +161,7 @@ export default function TypingClubLessonMap({
                 <Star
                   key={s}
                   className={`w-3.5 h-3.5 ${
-                    s <= (starsCount || 4)
+                    starsCount > 0 && s <= starsCount
                       ? 'text-amber-400 fill-amber-400 drop-shadow-[0_0_4px_#f59e0b]'
                       : 'text-slate-300'
                   }`}

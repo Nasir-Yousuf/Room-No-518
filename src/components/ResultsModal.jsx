@@ -25,18 +25,20 @@ export default function ResultsModal({
   const activeAvatar = customAvatars[finalTier.tier] || finalTier.avatar;
 
   let stars = 1;
-  if (accuracy >= 92 && wpm >= 35) stars = 2;
-  if (accuracy >= 96 && wpm >= 50) stars = 3;
+  if (accuracy >= 80 && wpm >= 3) stars = 2;
+  if (accuracy >= 88 && wpm >= 5) stars = 3;
+  if (accuracy >= 94 && wpm >= 7) stars = 4;
+  if (accuracy >= 98 && wpm >= 9) stars = 5;
 
   useEffect(() => {
-    if (finalTier.tier >= 4) {
+    if (finalTier.tier >= 4 || stars >= 4) {
       confetti({
         particleCount: 120,
         spread: 75,
         origin: { y: 0.6 }
       });
     }
-  }, [finalTier.tier]);
+  }, [finalTier.tier, stars]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
@@ -50,10 +52,10 @@ export default function ResultsModal({
         {/* Stars & Title */}
         <div className="text-center mb-5">
           <div className="flex justify-center gap-1.5 mb-2">
-            {[1, 2, 3].map((starNum) => (
+            {[1, 2, 3, 4, 5].map((starNum) => (
               <Star
                 key={starNum}
-                className={`w-7 h-7 sm:w-8 sm:h-8 transition-transform ${
+                className={`w-6 h-6 sm:w-8 sm:h-8 transition-transform ${
                   starNum <= stars
                     ? 'text-amber-400 fill-amber-400 scale-110 drop-shadow-[0_0_10px_#f59e0b]'
                     : 'text-slate-700'

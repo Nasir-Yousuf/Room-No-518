@@ -218,9 +218,11 @@ export default function App() {
     setShowResults(true);
 
     // Calculate & persist stars (1 to 5 stars)
-    let stars = 3;
-    if (accuracy >= 92) stars = 4;
-    if (accuracy >= 96 && wpm >= 8) stars = 5;
+    let stars = 1;
+    if (accuracy >= 80 && wpm >= 3) stars = 2;
+    if (accuracy >= 88 && wpm >= 5) stars = 3;
+    if (accuracy >= 94 && wpm >= 7) stars = 4;
+    if (accuracy >= 98 && wpm >= 9) stars = 5;
 
     setCompletedStars((prev) => {
       const currentBest = prev[currentLesson.number] || 0;
