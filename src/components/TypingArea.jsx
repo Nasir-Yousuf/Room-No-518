@@ -75,20 +75,25 @@ export default function TypingArea({
         }}
       />
 
-      {/* Atmospheric Background Tier Photo */}
+      {/* Atmospheric Background Tier Photo (Right where user looks while typing) */}
       {showBgPhoto && (
         <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
           <img
             src={activeAvatar}
             alt={currentTier.name}
-            className="w-full h-full object-cover opacity-15 dark:opacity-20 filter contrast-110 saturate-125 transition-all duration-700 transform scale-105"
+            className="w-full h-full object-cover sm:object-contain opacity-35 sm:opacity-45 filter contrast-125 saturate-125 transition-all duration-700 transform scale-105"
           />
-          {/* Soft gradient wash overlay ensuring 100% text readability */}
+          {/* Soft wash overlay ensuring 100% text readability while keeping photo clearly visible */}
           <div
             className="absolute inset-0 transition-colors duration-500"
             style={{
-              background: 'radial-gradient(circle at center, var(--bg-glass-card), var(--bg-primary) 85%)',
-              opacity: 0.88
+              background: 'linear-gradient(to bottom, var(--bg-glass-card) 0%, transparent 20%, transparent 80%, var(--bg-glass-card) 100%)'
+            }}
+          />
+          <div
+            className="absolute inset-0 transition-colors duration-500 opacity-60"
+            style={{
+              background: 'radial-gradient(ellipse at center, transparent 35%, var(--bg-glass-card) 90%)'
             }}
           />
         </div>

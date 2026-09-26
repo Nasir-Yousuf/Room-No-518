@@ -396,8 +396,6 @@ export default function App() {
         completedStars={completedStars}
         isDark={isDark}
         onToggleTheme={toggleTheme}
-        onOpenCustomPhotos={() => setShowAvatarModal(true)}
-        customAvatars={customAvatars}
       />
     );
   }

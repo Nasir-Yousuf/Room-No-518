@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown, Image as ImageIcon, Sparkles, X } from 'lucide-react';
-import { LESSON_STAGES, ALL_685_LESSONS, BEAUTY_TIERS } from '../data/lessons';
+import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown } from 'lucide-react';
+import { LESSON_STAGES, ALL_685_LESSONS } from '../data/lessons';
 import ThemeToggle from './ThemeToggle';
 
 // Helper component to render icons directly from Typing Club's official svgsprite-cmn.svg
@@ -246,13 +246,10 @@ export default function TypingClubLessonMap({
   onBackToTyping,
   completedStars = {},
   isDark,
-  onToggleTheme,
-  onOpenCustomPhotos,
-  customAvatars = {}
+  onToggleTheme
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedStages, setCollapsedStages] = useState({});
-  const [lightboxTier, setLightboxTier] = useState(null);
   const mainRef = useRef(null);
 
   const totalCompleted = Object.keys(completedStars).length;
@@ -333,18 +330,6 @@ export default function TypingClubLessonMap({
               style={{ color: 'var(--text-primary)' }}
             />
           </div>
-
-          {/* Tier Photos Button */}
-          {onOpenCustomPhotos && (
-            <button
-              onClick={onOpenCustomPhotos}
-              className="hidden md:flex items-center gap-1.5 px-3 py-2 glass-light rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white transition cursor-pointer"
-              title="Customize Speed Tier Photos"
-            >
-              <ImageIcon className="w-3.5 h-3.5 text-purple-500" />
-              <span>Tier Photos</span>
-            </button>
-          )}
 
           {/* Day/Night Toggle */}
           <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
@@ -428,114 +413,6 @@ export default function TypingClubLessonMap({
           </div>
         </div>
       </div>
-
-      {/* ─── Speed Tiers & Character Photos Gallery ─── */}
-      <div className="w-full px-4 sm:px-8 py-2 mb-3">
-        <div className="max-w-6xl mx-auto glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/5 via-pink-600/5 to-amber-600/5 pointer-events-none" />
-
-          {/* Section Header */}
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
-            <div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-purple-500/30">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
-                </div>
-                <h2 className="text-xl sm:text-2xl font-black" style={{ color: 'var(--text-heading)' }}>
-                  Speed Tiers & Photos
-                </h2>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                Your typing speed dynamically unlocks tiers and companion photos in real-time. Click any photo to preview or customize.
-              </p>
-            </div>
-
-            {onOpenCustomPhotos && (
-              <button
-                onClick={onOpenCustomPhotos}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-bold shadow-md shadow-purple-500/20 transition cursor-pointer self-start sm:self-auto"
-              >
-                <ImageIcon className="w-3.5 h-3.5" />
-                <span>Customize Photos</span>
-              </button>
-            )}
-          </div>
-
-          {/* 5 Tier Cards Grid */}
-          <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-            {BEAUTY_TIERS.map((tier) => {
-              const currentImg = customAvatars[tier.tier] || tier.avatar;
-              const isCustom = Boolean(customAvatars[tier.tier]);
-
-              return (
-                <div
-                  key={tier.tier}
-                  onClick={() => setLightboxTier({ ...tier, avatar: currentImg, isCustom })}
-                  className="group/tier relative glass-light rounded-2xl p-3 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-xl border"
-                  style={{
-                    borderColor: `${tier.themeColor}35`,
-                    boxShadow: `0 4px 20px ${tier.themeColor}10`
-                  }}
-                >
-                  {/* Photo Container */}
-                  <div
-                    className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-2.5 shadow-md border-2 transition-transform duration-500 group-hover/tier:scale-[1.02]"
-                    style={{ borderColor: tier.themeColor }}
-                  >
-                    <img
-                      src={currentImg}
-                      alt={tier.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover/tier:scale-110"
-                    />
-
-                    {/* Tier Number Pill */}
-                    <div
-                      className="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-black text-white shadow-md flex items-center gap-1"
-                      style={{ backgroundColor: tier.themeColor }}
-                    >
-                      <span>Tier {tier.tier}</span>
-                    </div>
-
-                    {isCustom && (
-                      <span className="absolute top-2 right-2 w-3.5 h-3.5 bg-emerald-500 rounded-full flex items-center justify-center shadow" title="Custom Photo Uploaded">
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                      </span>
-                    )}
-
-                    {/* Quick view overlay icon on hover */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/tier:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <span className="text-white text-xs font-bold bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-lg">
-                        View Photo 🔍
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Tier Info */}
-                  <h3
-                    className="text-xs sm:text-sm font-extrabold truncate w-full"
-                    style={{ color: tier.themeColor }}
-                  >
-                    {tier.name}
-                  </h3>
-
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md glass-card text-slate-700 dark:text-slate-300">
-                      {tier.targetSpeed}
-                    </span>
-                  </div>
-
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium italic mt-1.5 line-clamp-1">
-                    "{tier.dialogues[0]}"
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* ─── Main Stages & Lesson Grid ─── */}
       <main ref={mainRef} className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 pb-12 relative z-10">
         {stagesWithLessons.map((stage, stageIdx) => {
@@ -700,89 +577,6 @@ export default function TypingClubLessonMap({
           <ChevronDown className="w-5 h-5 stroke-[2.5]" />
         </button>
       </aside>
-
-      {/* ─── Tier Photo Lightbox Modal ─── */}
-      {lightboxTier && (
-        <div
-          onClick={() => setLightboxTier(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="relative max-w-md w-full glass-strong rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col items-center animate-scale-in border"
-            style={{ borderColor: `${lightboxTier.themeColor}50` }}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => setLightboxTier(null)}
-              className="absolute top-4 right-4 p-2 rounded-xl glass-light text-slate-400 hover:text-white transition cursor-pointer"
-              title="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            {/* Photo */}
-            <div
-              className="w-full aspect-[4/5] max-h-[50vh] rounded-2xl overflow-hidden border-2 shadow-2xl mb-4"
-              style={{ borderColor: lightboxTier.themeColor }}
-            >
-              <img
-                src={lightboxTier.avatar}
-                alt={lightboxTier.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            {/* Details */}
-            <div className="w-full text-center">
-              <div className="flex items-center justify-center gap-2 mb-1.5">
-                <span
-                  className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg text-white"
-                  style={{ backgroundColor: lightboxTier.themeColor }}
-                >
-                  Tier {lightboxTier.tier}
-                </span>
-                <span className="text-sm font-mono font-bold text-slate-500 dark:text-slate-400">
-                  {lightboxTier.targetSpeed}
-                </span>
-              </div>
-
-              <h3 className="text-xl sm:text-2xl font-black" style={{ color: lightboxTier.themeColor }}>
-                {lightboxTier.name}
-              </h3>
-
-              <div className="mt-3 p-3 glass-card rounded-xl text-left">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Typing Reactions
-                </span>
-                <p className="text-xs sm:text-sm font-medium italic text-slate-700 dark:text-slate-300">
-                  "{lightboxTier.dialogues[0]}"
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center gap-3 mt-4">
-                {onOpenCustomPhotos && (
-                  <button
-                    onClick={() => {
-                      setLightboxTier(null);
-                      onOpenCustomPhotos();
-                    }}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-bold shadow-lg shadow-purple-500/25 transition cursor-pointer"
-                  >
-                    Customize Photo
-                  </button>
-                )}
-                <button
-                  onClick={() => setLightboxTier(null)}
-                  className="px-5 py-2.5 glass-light rounded-xl text-slate-700 dark:text-slate-300 text-xs font-bold hover:text-indigo-600 dark:hover:text-white transition cursor-pointer"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
