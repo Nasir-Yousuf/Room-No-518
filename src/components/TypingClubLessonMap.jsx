@@ -13,159 +13,91 @@ function SpriteIcon({ id, className = "w-[80px] h-[80px] sm:w-[94px] sm:h-[94px]
   );
 }
 
-// Realistic 3D Faceted Golden Star & Clear Embossed Socket
-function GoldenStar({ size = 24, earned = false, delay = 0, className = "" }) {
-  const uid = React.useId().replace(/[^a-zA-Z0-9]/g, '');
-  const starId = `realStar-${uid}-${delay}`;
-  const sizeClass = className || "w-[21px] h-[21px] sm:w-[24px] sm:h-[24px]";
-
-  if (!earned) {
-    return (
+// Authentic Typing Club Padlock for untried lessons
+function LessonLockIcon() {
+  return (
+    <div className="h-[38px] sm:h-[44px] mt-1.5 flex items-center justify-center select-none" title="Not typed yet">
       <svg
-        viewBox="0 0 24 24"
-        className={`${sizeClass} select-none transition-transform duration-300 hover:scale-110`}
-        style={{ animationDelay: `${delay}ms` }}
+        width="40"
+        height="35"
+        viewBox="0 0 34 30"
+        className="select-none filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.15)] transition-transform duration-300 group-hover:scale-110"
       >
         <defs>
-          <linearGradient id={`emptySocket-${starId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(180, 83, 9, 0.08)" />
-            <stop offset="100%" stopColor="rgba(180, 83, 9, 0.16)" />
+          <linearGradient id="tcLockShackle" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#94A3B8" />
+            <stop offset="35%" stopColor="#F1F5F9" />
+            <stop offset="70%" stopColor="#CBD5E1" />
+            <stop offset="100%" stopColor="#64748B" />
           </linearGradient>
-          <linearGradient id={`emptySocketDark-${starId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(255, 255, 255, 0.04)" />
-            <stop offset="100%" stopColor="rgba(255, 255, 255, 0.09)" />
+          <linearGradient id="tcLockBody" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FEE036" />
+            <stop offset="25%" stopColor="#F5B800" />
+            <stop offset="100%" stopColor="#D98E04" />
           </linearGradient>
         </defs>
 
-        {/* Clear Embossed Socket Silhouette */}
+        {/* Soft floor shadow matching the star ground shadow */}
+        <ellipse cx="19" cy="27" rx="10" ry="2.2" fill="rgba(100, 116, 139, 0.35)" />
+
+        {/* Metallic Shackle */}
         <path
-          d="M12 1.5 L14.7 8.28 L22 8.76 L16.37 13.42 L18.17 20.49 L12 16.6 L5.83 20.49 L7.63 13.42 L2.01 8.76 L9.3 8.28 Z"
-          className="fill-[url(#emptySocket-${starId})] dark:fill-[url(#emptySocketDark-${starId})] stroke-amber-900/40 dark:stroke-slate-500/60"
-          strokeWidth="1.2"
-          strokeLinejoin="round"
+          d="M12 13 V7.5 A5 5 0 0 1 22 7.5 V13"
+          fill="none"
+          stroke="url(#tcLockShackle)"
+          strokeWidth="2.8"
+          strokeLinecap="round"
         />
 
-        {/* 3D Ridges to make empty socket visibly sculpted */}
+        {/* Lock Body */}
+        <rect
+          x="8"
+          y="11.5"
+          width="18"
+          height="14.5"
+          rx="3"
+          fill="url(#tcLockBody)"
+          stroke="#B45309"
+          strokeWidth="0.85"
+        />
+
+        {/* Highlight inner bevel line */}
         <path
-          d="M12 12 L12 1.5 M12 12 L22 8.76 M12 12 L18.17 20.49 M12 12 L5.83 20.49 M12 12 L2.01 8.76"
-          className="stroke-amber-900/25 dark:stroke-slate-400/30"
+          d="M9.5 13 H24.5"
+          stroke="#FFFDF0"
           strokeWidth="0.8"
           strokeLinecap="round"
+          opacity="0.8"
         />
-        <path
-          d="M12 12 L14.7 8.28 M12 12 L16.37 13.42 M12 12 L12 16.6 M12 12 L7.63 13.42 M12 12 L9.3 8.28"
-          className="stroke-amber-900/15 dark:stroke-slate-400/20"
-          strokeWidth="0.7"
-          strokeLinecap="round"
-        />
+
+        {/* Keyhole */}
+        <circle cx="17" cy="17" r="1.5" fill="#5A2E05" />
+        <polygon points="16,17.5 18,17.5 17.6,21 16.4,21" fill="#5A2E05" />
       </svg>
-    );
-  }
-
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={`${sizeClass} select-none filter drop-shadow-[0_2px_4px_rgba(217,119,6,0.5)] dark:drop-shadow-[0_2px_7px_rgba(250,204,21,0.45)] transition-transform duration-300 hover:scale-115 animate-scale-in`}
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <defs>
-        {/* Specular Highlight Gold */}
-        <linearGradient id={`goldLit-${starId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFDF0" />
-          <stop offset="40%" stopColor="#FEF08A" />
-          <stop offset="100%" stopColor="#FACC15" />
-        </linearGradient>
-
-        {/* Midtone Radiant Gold */}
-        <linearGradient id={`goldMid-${starId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FDE047" />
-          <stop offset="60%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#D97706" />
-        </linearGradient>
-
-        {/* Warm Ambient Shaded Gold */}
-        <linearGradient id={`goldShade-${starId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F59E0B" />
-          <stop offset="50%" stopColor="#D97706" />
-          <stop offset="100%" stopColor="#B45309" />
-        </linearGradient>
-
-        {/* Deep Crevice Bronze Shade */}
-        <linearGradient id={`goldDeep-${starId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#D97706" />
-          <stop offset="100%" stopColor="#92400E" />
-        </linearGradient>
-      </defs>
-
-      {/* Solid Base Silhouette with Polished Bronze Rim */}
-      <path
-        d="M12 1.5 L14.7 8.28 L22 8.76 L16.37 13.42 L18.17 20.49 L12 16.6 L5.83 20.49 L7.63 13.42 L2.01 8.76 L9.3 8.28 Z"
-        fill={`url(#goldMid-${starId})`}
-        stroke="#92400E"
-        strokeWidth="0.85"
-        strokeLinejoin="round"
-      />
-
-      {/* ─── 10 Precision 3D Facets (Light & Shadow Reflections) ─── */}
-      {/* Top Ray - Left Highlight */}
-      <polygon points="12,12 12,1.5 9.3,8.28" fill={`url(#goldLit-${starId})`} />
-      {/* Top Ray - Right Midtone */}
-      <polygon points="12,12 12,1.5 14.7,8.28" fill={`url(#goldMid-${starId})`} />
-
-      {/* Top-Right Ray - Upper Midtone */}
-      <polygon points="12,12 14.7,8.28 22,8.76" fill={`url(#goldMid-${starId})`} />
-      {/* Top-Right Ray - Lower Shaded */}
-      <polygon points="12,12 22,8.76 16.37,13.42" fill={`url(#goldShade-${starId})`} />
-
-      {/* Bottom-Right Ray - Upper Warm Shade */}
-      <polygon points="12,12 16.37,13.42 18.17,20.49" fill={`url(#goldShade-${starId})`} />
-      {/* Bottom-Right Ray - Lower Deep Bronze */}
-      <polygon points="12,12 18.17,20.49 12,16.6" fill={`url(#goldDeep-${starId})`} />
-
-      {/* Bottom-Left Ray - Lower Deep Shade */}
-      <polygon points="12,12 12,16.6 5.83,20.49" fill={`url(#goldDeep-${starId})`} />
-      {/* Bottom-Left Ray - Upper Midtone */}
-      <polygon points="12,12 5.83,20.49 7.63,13.42" fill={`url(#goldMid-${starId})`} />
-
-      {/* Top-Left Ray - Lower Midtone */}
-      <polygon points="12,12 7.63,13.42 2.01,8.76" fill={`url(#goldMid-${starId})`} />
-      {/* Top-Left Ray - Upper Specular Glow */}
-      <polygon points="12,12 2.01,8.76 9.3,8.28" fill={`url(#goldLit-${starId})`} />
-
-      {/* ─── Polished Bevel Ridges ─── */}
-      <path
-        d="M12 12 L12 1.5 M12 12 L2.01 8.76 M12 12 L9.3 8.28"
-        stroke="#FFFDF0"
-        strokeWidth="0.6"
-        strokeLinecap="round"
-        opacity="0.9"
-      />
-      <path
-        d="M12 12 L22 8.76 M12 12 L18.17 20.49 M12 12 L5.83 20.49"
-        stroke="#78350F"
-        strokeWidth="0.5"
-        strokeLinecap="round"
-        opacity="0.45"
-      />
-
-      {/* ─── Real Diamond Glint / Specular Sparkle ─── */}
-      <circle cx="12" cy="3.2" r="0.8" fill="#FFFFFF" opacity="0.95" />
-      <path
-        d="M12 1.6 L12.35 3.1 L13.8 3.5 L12.35 3.9 L12 5.4 L11.65 3.9 L10.2 3.5 L11.65 3.1 Z"
-        fill="#FFFFFF"
-        opacity="0.85"
-      />
-    </svg>
+    </div>
   );
 }
 
-// Mini star cluster with increased size and spacing
-function StarsCluster({ earnedCount = 0 }) {
+// Authentic 5-Star Arc Cluster & Lock state resolver
+function StarsCluster({ earnedCount = 0, isCurrent = false, isTried = false }) {
+  const count = Math.max(0, Math.min(5, earnedCount));
+
+  // If not tried / completed and not currently being tried, show the lock
+  if (!isTried && !isCurrent && count === 0) {
+    return <LessonLockIcon />;
+  }
+
+  // If being tried or completed, show the official Typing Club 5-star arc
+  const starSrc = count === 0 ? '/stars-0.png' : `/stars-${count}.png`;
+
   return (
-    <div className="flex items-center justify-center gap-1 sm:gap-1.5 mt-2.5">
-      {[0, 1, 2, 3, 4].map((idx) => (
-        <GoldenStar key={idx} earned={idx < earnedCount} delay={idx * 60} />
-      ))}
+    <div className="h-[38px] sm:h-[44px] mt-1.5 flex items-center justify-center select-none">
+      <img
+        src={starSrc}
+        alt={`${count} star${count === 1 ? '' : 's'}`}
+        className="w-[124px] sm:w-[144px] max-w-[92%] h-auto object-contain filter drop-shadow-sm transition-transform duration-300 group-hover:scale-105 pointer-events-none"
+        draggable={false}
+      />
     </div>
   );
 }
@@ -471,6 +403,7 @@ export default function TypingClubLessonMap({
                     const visual = getLessonVisualData(lesson);
                     const userEarnedStars = completedStars[lesson.number] || 0;
                     const isCompleted = userEarnedStars > 0;
+                    const isTried = isCompleted || isCurrent;
 
                     return (
                       <div
@@ -479,10 +412,12 @@ export default function TypingClubLessonMap({
                           onSelectLesson(lesson);
                           onBackToTyping();
                         }}
-                        className={`relative glass-card lesson-card rounded-2xl overflow-hidden cursor-pointer group ${
+                        className={`relative glass-card lesson-card rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 ${
                           isCurrent
                             ? 'ring-2 ring-indigo-500 shadow-xl shadow-indigo-500/25 scale-[1.02]'
-                            : 'hover:ring-1 hover:ring-indigo-500/30 dark:hover:ring-white/20'
+                            : isCompleted
+                            ? 'hover:ring-1 hover:ring-indigo-500/30 dark:hover:ring-white/20'
+                            : 'opacity-85 hover:opacity-100 hover:ring-1 hover:ring-amber-500/30'
                         }`}
                         style={{ animationDelay: `${lessonIdx * 0.02}s` }}
                       >
@@ -493,6 +428,15 @@ export default function TypingClubLessonMap({
                               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Current lesson badge */}
+                        {isCurrent && !isCompleted && (
+                          <div className="absolute top-2.5 right-2.5 z-10">
+                            <div className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-black uppercase tracking-wider shadow-md shadow-indigo-500/40">
+                              Current
                             </div>
                           </div>
                         )}
@@ -514,7 +458,7 @@ export default function TypingClubLessonMap({
                           <div className="h-[84px] sm:h-[98px] flex items-center justify-center transition-transform duration-500 ease-out group-hover:scale-105">
                             {visual.renderGraphic()}
                           </div>
-                          <StarsCluster earnedCount={userEarnedStars} />
+                          <StarsCluster earnedCount={userEarnedStars} isCurrent={isCurrent} isTried={isTried} />
                         </div>
 
                         {/* Bottom label (Bigger, Clear Text) */}

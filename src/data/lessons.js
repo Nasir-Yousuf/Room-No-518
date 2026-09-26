@@ -126,11 +126,11 @@ export function generateAllLessons() {
     let title = `Lesson ${i}`;
     let text = '';
 
-    // Stage 1: Home Row (1 to 85)
+    // Stage 1: Home Row (1 to 85) - Beginner
     if (i <= 85) {
       stageId = 1;
       difficulty = i <= 20 ? 'Easy' : 'Medium';
-      targetWpm = 10;
+      targetWpm = 15;
       if (i === 1) {
         title = 'Introduction to Typing';
         text = 'f j f j fj jf ff jj';
@@ -159,7 +159,7 @@ export function generateAllLessons() {
     else if (i <= 175) {
       stageId = 2;
       difficulty = 'Medium';
-      targetWpm = 10;
+      targetWpm = 20;
       const stepIdx = (i - 86) % TOP_ROW_STEPS.length;
       if (i === 89) title = 'Using Ten Fingers';
       else if (i === 90) title = 'Increase Speed';
@@ -183,7 +183,7 @@ export function generateAllLessons() {
     else if (i <= 260) {
       stageId = 3;
       difficulty = 'Medium';
-      targetWpm = 10;
+      targetWpm = 25;
       const stepIdx = (i - 176) % BOTTOM_ROW_STEPS.length;
       title = `Bottom Row Flow ${i}`;
       text = BOTTOM_ROW_STEPS[stepIdx];
@@ -192,7 +192,7 @@ export function generateAllLessons() {
     else if (i <= 350) {
       stageId = 4;
       difficulty = 'Hard';
-      targetWpm = 10;
+      targetWpm = 30;
       const stepIdx = (i - 261) % SHIFT_STEPS.length;
       title = `Shift & Capitals ${i}`;
       text = SHIFT_STEPS[stepIdx];
@@ -201,7 +201,7 @@ export function generateAllLessons() {
     else if (i <= 440) {
       stageId = 5;
       difficulty = 'Hard';
-      targetWpm = 10;
+      targetWpm = 35;
       const stepIdx = (i - 351) % NUMBER_STEPS.length;
       title = `Numbers Drill ${i}`;
       text = NUMBER_STEPS[stepIdx];
@@ -210,7 +210,7 @@ export function generateAllLessons() {
     else if (i <= 525) {
       stageId = 6;
       difficulty = 'Hard';
-      targetWpm = 10;
+      targetWpm = 40;
       const stepIdx = (i - 441) % SYMBOL_STEPS.length;
       title = `Symbols & Syntax ${i}`;
       text = SYMBOL_STEPS[stepIdx];
@@ -219,7 +219,7 @@ export function generateAllLessons() {
     else if (i <= 610) {
       stageId = 7;
       difficulty = 'Expert';
-      targetWpm = 10;
+      targetWpm = 45;
       const stepIdx = (i - 526) % LITERATURE_STEPS.length;
       title = `Literature & Speech ${i}`;
       text = LITERATURE_STEPS[stepIdx];
@@ -228,7 +228,7 @@ export function generateAllLessons() {
     else {
       stageId = 8;
       difficulty = 'Grandmaster';
-      targetWpm = 10;
+      targetWpm = 50;
       const stepIdx = (i - 611) % MASTER_STEPS.length;
       if (i === 685) {
         title = 'Lesson 685: Grandmaster Graduation Exam 👑';
@@ -264,18 +264,75 @@ export const LESSON_CATEGORIES = LESSON_STAGES.map((stage) => ({
   lessons: ALL_685_LESSONS.filter((l) => l.stageId === stage.id)
 }));
 
-// 5 Beauty & Aesthetic Tiers based on 3, 5, 7, 9, 10+ WPM
+/**
+ * Progressive Star Rating: Scales smoothly from Beginner to Advanced
+ * @param {number} wpm - Words per minute achieved
+ * @param {number} accuracy - Accuracy percentage (0 - 100)
+ * @param {number} targetWpm - Target WPM of the current lesson (default 15)
+ * @returns {number} Star count from 1 to 5
+ */
+export function calculateStars(wpm, accuracy, targetWpm = 15) {
+  const target = Math.max(10, targetWpm || 15);
+
+  // 5 Stars (Mastery):
+  // - Hit target speed with 90%+ accuracy (e.g. 15+ WPM with 90%+ acc on Lesson 1)
+  // - OR surpassed target by 25%+ with 85%+ accuracy (e.g. 40 WPM with 92% acc on Lesson 1)
+  // - OR 100% clean accuracy with at least 75% target speed
+  if (
+    (wpm >= target && accuracy >= 90) ||
+    (wpm >= target * 1.25 && accuracy >= 85) ||
+    (accuracy === 100 && wpm >= target * 0.75)
+  ) {
+    return 5;
+  }
+
+  // 4 Stars (Great):
+  // - Reached 80% target speed with 84%+ accuracy
+  // - OR reached target speed with 78%+ accuracy
+  // - OR 95%+ accuracy with 60%+ target speed
+  if (
+    (wpm >= target * 0.8 && accuracy >= 84) ||
+    (wpm >= target && accuracy >= 78) ||
+    (accuracy >= 95 && wpm >= target * 0.6)
+  ) {
+    return 4;
+  }
+
+  // 3 Stars (Good):
+  // - Reached 60% target speed with 75%+ accuracy
+  // - OR accuracy >= 82%
+  if (
+    (wpm >= target * 0.6 && accuracy >= 75) ||
+    (accuracy >= 82) ||
+    (wpm >= target * 0.8 && accuracy >= 70)
+  ) {
+    return 3;
+  }
+
+  // 2 Stars (Developing):
+  if (
+    (wpm >= target * 0.4 && accuracy >= 65) ||
+    (accuracy >= 70)
+  ) {
+    return 2;
+  }
+
+  // 1 Star (Complete)
+  return 1;
+}
+
+// 5 Dynamic Speed & Glamour Tiers (Beginner to Advanced progression)
 export const BEAUTY_TIERS = [
   {
     tier: 1,
     name: 'Disaster Goblin',
-    title: '< 3 WPM (Typo State)',
+    title: '< 15 WPM (Typo State)',
     avatar: '/avatars/tier1.png',
     minScore: 0,
     maxScore: 29,
     minWpm: 0,
-    maxWpm: 2,
-    targetSpeed: '< 3 WPM',
+    maxWpm: 14,
+    targetSpeed: '< 15 WPM',
     themeColor: '#ef4444',
     bgGradient: 'from-rose-950/60 to-red-900/40',
     dialogues: [
@@ -288,56 +345,56 @@ export const BEAUTY_TIERS = [
   {
     tier: 2,
     name: 'Stressed & Disheveled',
-    title: '3 - 4 WPM',
+    title: '15 - 28 WPM (Beginner)',
     avatar: '/avatars/tier2.png',
     minScore: 30,
     maxScore: 49,
-    minWpm: 3,
-    maxWpm: 4,
-    targetSpeed: '3 - 4 WPM',
+    minWpm: 15,
+    maxWpm: 28,
+    targetSpeed: '15 - 28 WPM',
     themeColor: '#f59e0b',
     bgGradient: 'from-amber-950/60 to-orange-900/40',
     dialogues: [
-      "Wait wait wait, the deadline is here and I have no sleep! 😰",
-      "Too many typos! My mascara is running everywhere! 💦",
-      "Slow down a bit and hit the right letters! You're stressing me out! 😣",
-      "Ouch, that missed key pulled my hair! Concentrate! 💥"
+      "Wait wait wait, deadline is near! Speed up to 29+ WPM! 😰",
+      "Building the rhythm! Let's reach 29+ WPM for Casual Student! 💦",
+      "Good start! Push past 28 WPM to level up! 😣",
+      "Almost at steady pace! Keep fingers flowing! 💥"
     ]
   },
   {
     tier: 3,
     name: 'Casual Student',
-    title: '5 - 6 WPM (Initial)',
+    title: '29 - 42 WPM (Steady)',
     avatar: '/avatars/tier3.png',
     minScore: 50,
     maxScore: 69,
-    minWpm: 5,
-    maxWpm: 6,
-    targetSpeed: '5 - 6 WPM',
+    minWpm: 29,
+    maxWpm: 42,
+    targetSpeed: '29 - 42 WPM',
     themeColor: '#3b82f6',
     bgGradient: 'from-blue-950/60 to-indigo-900/40',
     dialogues: [
       "Nice steady pace! Keep the momentum going! 😊",
-      "You're doing decent. Just reach 9-10 WPM to unlock Level 5! ✨",
+      "Solid rhythm! Reach 43+ WPM to unlock Glamour Star! ✨",
       "Stay calm and keep typing, you've got this rhythm! 🎒",
-      "Good accuracy! Now let's push the speed to Level 5! 🚀"
+      "Great pace! Let's accelerate to 43+ WPM! 🚀"
     ]
   },
   {
     tier: 4,
     name: 'Glamour Star',
-    title: '7 - 8 WPM',
+    title: '43 - 57 WPM (Fluent)',
     avatar: '/avatars/tier4.png',
     minScore: 70,
     maxScore: 89,
-    minWpm: 7,
-    maxWpm: 8,
-    targetSpeed: '7 - 8 WPM',
+    minWpm: 43,
+    maxWpm: 57,
+    targetSpeed: '43 - 57 WPM',
     themeColor: '#ec4899',
     bgGradient: 'from-pink-950/60 to-fuchsia-900/40',
     dialogues: [
       "Ooh yes! Loving this rhythm! Looking stylish and sleek! 💖",
-      "Almost at Level 5! Just reach 9-10 WPM! 🌟",
+      "Sensational speed! Reach 58+ WPM to unlock Level 5 Goddess! 🌟",
       "Sensational pace! Just a tiny bit faster for Level 5! 💅",
       "Now THIS is what I call proper keyboard flair! Keep going! 🔥"
     ]
@@ -345,19 +402,19 @@ export const BEAUTY_TIERS = [
   {
     tier: 5,
     name: 'Celestial Goddess',
-    title: '9 - 10+ WPM (Max Level 5)',
+    title: '58+ WPM (Speed Master)',
     avatar: '/avatars/tier5.png',
     minScore: 90,
     maxScore: 100,
-    minWpm: 9,
+    minWpm: 58,
     maxWpm: 999,
-    targetSpeed: '9 - 10+ WPM',
+    targetSpeed: '58+ WPM',
     themeColor: '#a855f7',
     bgGradient: 'from-purple-950/80 to-fuchsia-900/60',
     dialogues: [
-      "PERFECTION! Level 5 reached! Your fingers channel divine grace! 👑✨",
-      "LEVEL 5 UNLOCKED! The entire cosmos sparkles in your wake! 🌌💖",
-      "Max Tier Goddess! Not a single mortal flaw in sight! 🌟👸",
+      "PERFECTION! 58+ WPM! Your fingers channel divine grace! 👑✨",
+      "MAX TIER CELESTIAL! The entire cosmos sparkles in your wake! 🌌💖",
+      "Max Tier Goddess! Blazing speed without a single flaw! 🌟👸",
       "Maximum glamour unlocked! You are absolute typing royalty! 💎✨"
     ]
   }

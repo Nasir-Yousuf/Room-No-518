@@ -258,22 +258,14 @@ export default function ResultsModal({
           </span>
         </div>
 
-        {/* Stars Arc */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 mb-5">
-          {[0, 1, 2, 3, 4].map((idx) => (
-            <div
-              key={idx}
-              style={{
-                transform: `translateY(${Math.abs(idx - 2) * 5}px) rotate(${(idx - 2) * 5}deg)`
-              }}
-            >
-              <ResultStar
-                size={idx === 2 ? 46 : 36}
-                earned={idx < stars}
-                delay={idx * 150}
-              />
-            </div>
-          ))}
+        {/* Stars Arc (Typing Club Official) */}
+        <div className="flex items-center justify-center mb-6 animate-scale-in">
+          <img
+            src={`/stars-${stars}.png`}
+            alt={`${stars} stars`}
+            className="w-[190px] sm:w-[230px] h-auto object-contain filter drop-shadow-[0_8px_20px_rgba(250,204,21,0.4)] hover:scale-105 transition-transform duration-300 pointer-events-none select-none"
+            draggable={false}
+          />
         </div>
 
         {/* Tier Photo Achievement Badge */}
