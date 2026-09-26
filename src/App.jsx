@@ -16,12 +16,12 @@ import {
 } from './audio';
 
 export default function App() {
-  // Navigation View: 'typing' (main typing arena) | 'lessons' (Typing Club 500 curriculum page)
-  const [currentView, setCurrentView] = useState('typing');
+  // Navigation View: 'lessons' (Typing Club 500 curriculum page by default) | 'typing' (main typing arena)
+  const [currentView, setCurrentView] = useState('lessons');
 
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [currentLesson, setCurrentLesson] = useState(ALL_500_LESSONS[0]);
-  const [gameMode, setGameMode] = useState('lesson');
+  const [gameMode] = useState('lesson');
 
   // Completed lesson stars map { [lessonNumber]: stars }
   const [completedStars, setCompletedStars] = useState(() => {
@@ -33,6 +33,39 @@ export default function App() {
     }
   });
 
+  // Theme state: Day (#F7F2CF Cream, Default) vs Night (Dark version)
+  const [isDark, setIsDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem('glowtype_theme_mode');
+      if (saved === 'dark') return true;
+      if (saved === 'light') return false;
+      return false; // Default is #F7F2CF Day mode
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('glowtype_theme_mode', isDark ? 'dark' : 'light');
+    } catch {
+      // ignore
+    }
+    if (isDark) {
+      document.documentElement.classList.add('dark-theme');
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light-theme');
+    } else {
+      document.documentElement.classList.remove('dark-theme');
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light-theme');
+    }
+  }, [isDark]);
+
+  const toggleTheme = useCallback(() => {
+    setIsDark((prev) => !prev);
+  }, []);
+
   // Typing States
   const [targetText, setTargetText] = useState(ALL_500_LESSONS[0].text);
   const [userInput, setUserInput] = useState('');
@@ -43,7 +76,7 @@ export default function App() {
   const [lastErrorTrigger, setLastErrorTrigger] = useState(0);
 
   // Time & Metrics
-  const [startTime, setStartTime] = useState(null);
+  const [_startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [wpm, setWpm] = useState(0);
   const [accuracy, setAccuracy] = useState(100);
@@ -140,6 +173,22 @@ export default function App() {
     errorPenaltyUntil.current = 0;
     prevTierRef.current = 3;
   }, [currentLesson, gameMode]);
+
+  // Inject Typing Club SVG Sprite on initial mount for instant zero-latency vector rendering
+  useEffect(() => {
+    fetch('/svgsprite-cmn.svg')
+      .then((res) => res.text())
+      .then((svgText) => {
+        if (!document.getElementById('typingclub-svg-sprite')) {
+          const div = document.createElement('div');
+          div.id = 'typingclub-svg-sprite';
+          div.style.display = 'none';
+          div.innerHTML = svgText;
+          document.body.appendChild(div);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSelectLesson = (lesson) => {
     setCurrentLesson(lesson);
@@ -345,14 +394,33 @@ export default function App() {
         onSelectLesson={handleSelectLesson}
         onBackToTyping={() => setCurrentView('typing')}
         completedStars={completedStars}
+        isDark={isDark}
+        onToggleTheme={toggleTheme}
+        onOpenCustomPhotos={() => setShowAvatarModal(true)}
+        customAvatars={customAvatars}
       />
     );
   }
 
   // Otherwise, render the Typing Arena View
   return (
-    <div className="min-h-screen bg-[#f7f2cf] flex flex-col font-sans select-none">
-      {/* Typing Club Exact White Header */}
+    <div
+      className="min-h-screen flex flex-col font-['Inter'] select-none relative overflow-hidden"
+      style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+    >
+      {/* Background ambient effects */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full blur-3xl transition-all duration-2000 opacity-[0.04]"
+          style={{ background: currentTier.themeColor }}
+        />
+        <div
+          className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl transition-all duration-2000 opacity-[0.03]"
+          style={{ background: currentTier.themeColor }}
+        />
+      </div>
+
+      {/* Typing Club Header */}
       <TypingClubHeader
         lessonTitle={currentLesson.title}
         lessonNumber={currentLesson.number}
@@ -369,11 +437,14 @@ export default function App() {
         accuracy={accuracy}
         currentTier={currentTier}
         glamourScore={glamourScore}
+        isDark={isDark}
+        onToggleTheme={toggleTheme}
+        customAvatars={customAvatars}
       />
 
-      {/* Main Typing Club Stage Arena */}
-      <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-between gap-4">
-        {/* Center: Typing Area with Background Photo of Current Tier */}
+      {/* Main Typing Arena */}
+      <main className="flex-1 max-w-5xl w-full mx-auto p-3 sm:p-6 flex flex-col justify-between gap-3 relative z-10">
+        {/* Typing Area */}
         <TypingArea
           targetText={targetText}
           userInput={userInput}
@@ -387,9 +458,10 @@ export default function App() {
           customAvatars={customAvatars}
           lastErrorTrigger={lastErrorTrigger}
           glamourScore={glamourScore}
+          onOpenCustomPhotos={() => setShowAvatarModal(true)}
         />
 
-        {/* Bottom: Authentic Typing Club Keyboard with Hands & Road scenery */}
+        {/* Virtual Keyboard */}
         <VirtualKeyboard
           targetChar={currentTargetChar}
           activeKey={activeKey}
@@ -409,7 +481,14 @@ export default function App() {
         elapsedTime={elapsedTime}
         onRestart={() => resetGame()}
         onNextLesson={handleNextLesson}
-        hasNextLesson={currentLesson.number < 500}
+        hasNextLesson={currentLesson.number < 685}
+        currentLesson={currentLesson}
+        onClose={() => setShowResults(false)}
+        onBackToLessons={() => {
+          setShowResults(false);
+          setCurrentView('lessons');
+        }}
+        currentTier={currentTier}
         customAvatars={customAvatars}
       />
 

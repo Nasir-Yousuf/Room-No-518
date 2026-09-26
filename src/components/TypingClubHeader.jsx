@@ -1,5 +1,6 @@
 import React from 'react';
-import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, Settings, Zap, Target, Star } from 'lucide-react';
+import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, Zap, Target, Flame, ArrowLeft } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function TypingClubHeader({
   lessonTitle,
@@ -16,72 +17,104 @@ export default function TypingClubHeader({
   wpm,
   accuracy,
   currentTier,
-  glamourScore
+  glamourScore,
+  isDark,
+  onToggleTheme,
+  customAvatars = {}
 }) {
+  const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
+
   return (
-    <header className="w-full bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 flex items-center justify-between text-slate-700 select-none shadow-xs z-20">
-      {/* Left: Menu Hamburger + Lesson Title */}
-      <div className="flex items-center gap-3">
+    <header className="w-full glass-strong px-3 sm:px-6 py-2.5 flex items-center justify-between select-none z-20 relative overflow-hidden" style={{ color: 'var(--text-primary)' }}>
+      {/* Animated gradient line at top */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-shift opacity-60" />
+
+      {/* Left: Back + Lesson Info */}
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
           onClick={onOpenLessons}
-          className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center justify-center cursor-pointer"
-          title="Open Lesson List"
+          className="p-2 rounded-xl glass-light hover:bg-white/10 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer group"
+          title="Back to Lessons"
         >
-          <Menu className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
         </button>
 
         <div
           onClick={onOpenLessons}
-          className="flex items-center gap-2 cursor-pointer hover:text-blue-600 transition"
+          className="flex items-center gap-2 cursor-pointer group"
         >
-          <span className="font-semibold text-sm sm:text-base text-slate-800">
-            Lesson {lessonNumber}: {lessonTitle}
-          </span>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/30 to-purple-500/30 flex items-center justify-center text-xs font-black text-indigo-400 border border-indigo-500/25">
+            {lessonNumber}
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-sm sm:text-base text-inherit group-hover:text-indigo-400 transition-colors truncate max-w-[140px] sm:max-w-[280px] leading-tight">
+              {lessonTitle}
+            </span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold hidden sm:inline -mt-0.5">
+              room-no-518
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Center / Right: Live Performance & Tools */}
-      <div className="flex items-center gap-2 sm:gap-4">
-        {/* Live WPM & Accuracy Pills */}
-        <div className="flex items-center gap-2 text-xs font-semibold">
-          <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full flex items-center gap-1 font-mono">
-            <Zap className="w-3.5 h-3.5 text-amber-600" />
-            <span>{wpm} WPM</span>
-          </span>
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Live Stats Pills */}
+        <div className="flex items-center gap-2 text-sm font-bold">
+          {/* WPM */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-light">
+            <Zap className="w-4 h-4 text-amber-500" />
+            <span className="text-amber-500 dark:text-amber-300 font-mono font-black text-sm">{wpm}</span>
+            <span className="text-slate-500 text-xs font-bold">WPM</span>
+          </div>
 
-          <span className="hidden sm:flex px-2.5 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full items-center gap-1 font-mono">
-            <Target className="w-3.5 h-3.5 text-emerald-600" />
-            <span>{accuracy}%</span>
-          </span>
+          {/* Accuracy */}
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-light">
+            <Target className="w-4 h-4 text-emerald-500" />
+            <span className={`font-mono font-black text-sm ${accuracy >= 90 ? 'text-emerald-500 dark:text-emerald-300' : 'text-amber-500 dark:text-amber-300'}`}>{accuracy}%</span>
+          </div>
 
-          <span
-            className="px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 border"
+          {/* Tier Badge with Photo Thumbnail */}
+          <button
+            onClick={onOpenCustomPhotos}
+            className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 shadow-sm hover:scale-105 cursor-pointer group"
             style={{
-              backgroundColor: `${currentTier.themeColor}15`,
+              background: `${currentTier.themeColor}18`,
               color: currentTier.themeColor,
-              borderColor: `${currentTier.themeColor}40`
+              border: `1px solid ${currentTier.themeColor}35`,
+              boxShadow: `0 0 15px ${currentTier.themeColor}15`
             }}
+            title={`Tier ${currentTier.tier}: ${currentTier.name} (${currentTier.targetSpeed}) - Click to customize`}
           >
-            Tier {currentTier.tier} ({currentTier.targetSpeed})
-          </span>
+            <img
+              src={activeAvatar}
+              alt={currentTier.name}
+              className="w-5 h-5 rounded-full object-cover border"
+              style={{ borderColor: currentTier.themeColor }}
+            />
+            <span className="font-mono">T{currentTier.tier}</span>
+          </button>
         </div>
 
-        {/* Typing Club Icon Controls */}
-        <div className="flex items-center gap-1 text-slate-500 border-l border-slate-200 pl-2 sm:pl-3">
+        {/* Divider */}
+        <div className="w-px h-6 bg-white/10" />
+
+        {/* Control Buttons */}
+        <div className="flex items-center gap-0.5 sm:gap-1">
           {/* Restart */}
           <button
             onClick={onReset}
-            className="p-1.5 hover:bg-slate-100 rounded-lg hover:text-slate-900 transition cursor-pointer"
+            className="p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer group"
             title="Restart Lesson"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4 group-hover:rotate-[-180deg] transition-transform duration-500" />
           </button>
 
           {/* Toggle Keyboard */}
           <button
             onClick={onToggleKeyboard}
-            className={`p-1.5 rounded-lg transition cursor-pointer ${
-              showKeyboard ? 'bg-blue-50 text-blue-600' : 'hover:bg-slate-100 hover:text-slate-900'
+            className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+              showKeyboard ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/8 text-slate-500 hover:text-white'
             }`}
             title={showKeyboard ? "Hide Keyboard" : "Show Keyboard"}
           >
@@ -91,8 +124,8 @@ export default function TypingClubHeader({
           {/* Toggle Hands */}
           <button
             onClick={onToggleHands}
-            className={`p-1.5 rounded-lg transition cursor-pointer ${
-              showHands ? 'bg-blue-50 text-blue-600' : 'hover:bg-slate-100 hover:text-slate-900'
+            className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+              showHands ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/8 text-slate-500 hover:text-white'
             }`}
             title={showHands ? "Hide Hands Guide" : "Show Hands Guide"}
           >
@@ -102,29 +135,24 @@ export default function TypingClubHeader({
           {/* Sound Toggle */}
           <button
             onClick={onToggleSound}
-            className="p-1.5 hover:bg-slate-100 rounded-lg hover:text-slate-900 transition cursor-pointer"
+            className="p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer"
             title={soundOn ? "Mute Sound" : "Enable Sound"}
           >
-            {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-rose-500" />}
+            {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
           </button>
 
           {/* Custom Photos */}
           <button
             onClick={onOpenCustomPhotos}
-            className="p-1.5 hover:bg-slate-100 rounded-lg hover:text-purple-600 transition cursor-pointer"
+            className="hidden sm:block p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-purple-400 transition-all duration-200 cursor-pointer"
             title="Customize Tier Photos"
           >
             <ImageIcon className="w-4 h-4" />
           </button>
 
-          {/* Lessons / Settings Modal */}
-          <button
-            onClick={onOpenLessons}
-            className="p-1.5 hover:bg-slate-100 rounded-lg hover:text-slate-900 transition cursor-pointer"
-            title="Lessons & Game Modes"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+          {/* Day/Night Toggle */}
+          <div className="w-px h-5 bg-white/10" />
+          <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
         </div>
       </div>
     </header>

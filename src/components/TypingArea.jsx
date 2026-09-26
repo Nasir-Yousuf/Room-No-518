@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Flame } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, Flame, Zap, Target, Image as ImageIcon } from 'lucide-react';
 
 export default function TypingArea({
   targetText,
@@ -13,21 +13,24 @@ export default function TypingArea({
   currentTier,
   customAvatars = {},
   lastErrorTrigger,
-  glamourScore
+  glamourScore,
+  onOpenCustomPhotos
 }) {
   const currentIdx = userInput.length;
   const targetChars = targetText.split('');
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
+  const textContainerRef = useRef(null);
 
   const [dialogue, setDialogue] = useState(currentTier.dialogues[0]);
   const [shaking, setShaking] = useState(false);
-  const [showBgImage, setShowBgImage] = useState(true);
+  const [showComboFlash, setShowComboFlash] = useState(false);
+  const [showBgPhoto, setShowBgPhoto] = useState(true);
 
   // Trigger shake on error
   useEffect(() => {
     if (lastErrorTrigger > 0) {
       setShaking(true);
-      const timer = setTimeout(() => setShaking(false), 450);
+      const timer = setTimeout(() => setShaking(false), 500);
       return () => clearTimeout(timer);
     }
   }, [lastErrorTrigger]);
@@ -42,66 +45,160 @@ export default function TypingArea({
     } else if (combo > 0 && combo % 10 === 0) {
       const d = currentTier.dialogues[Math.floor(Math.random() * currentTier.dialogues.length)];
       setDialogue(d);
+      setShowComboFlash(true);
+      setTimeout(() => setShowComboFlash(false), 800);
     }
   }, [combo, lastErrorTrigger, currentTier]);
 
+  // Auto-scroll text into view
+  useEffect(() => {
+    if (textContainerRef.current) {
+      const activeChar = textContainerRef.current.querySelector('[data-active="true"]');
+      if (activeChar) {
+        activeChar.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    }
+  }, [currentIdx]);
+
+  // Progress percentage
+  const progressPercent = targetText.length > 0 ? Math.round((currentIdx / targetText.length) * 100) : 0;
+
   return (
-    <div className={`relative w-full min-h-[300px] sm:min-h-[340px] bg-[#fbf7dc] rounded-2xl sm:rounded-3xl border border-amber-200/60 shadow-lg overflow-hidden flex flex-col justify-between p-6 sm:p-10 select-none transition-all duration-500 ${
-      shaking ? 'animate-errorShake ring-4 ring-red-500/40' : ''
+    <div className={`relative w-full min-h-[280px] sm:min-h-[340px] glass-card rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col justify-between select-none transition-all duration-500 ${
+      shaking ? 'animate-errorShake ring-2 ring-red-500/50' : ''
     }`}>
-      {/* Background Avatar Character (The tier photo right where the user looks!) */}
-      {showBgImage && (
+      {/* Dynamic background glow based on tier */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-all duration-1000 opacity-30"
+        style={{
+          background: `radial-gradient(ellipse at 50% 0%, ${currentTier.themeColor}15 0%, transparent 60%)`
+        }}
+      />
+
+      {/* Atmospheric Background Tier Photo */}
+      {showBgPhoto && (
         <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
           <img
             src={activeAvatar}
             alt={currentTier.name}
-            className="w-full h-full object-contain sm:object-cover opacity-25 sm:opacity-30 filter contrast-125 transition-all duration-700 transform scale-105"
+            className="w-full h-full object-cover opacity-15 dark:opacity-20 filter contrast-110 saturate-125 transition-all duration-700 transform scale-105"
           />
           {/* Soft gradient wash overlay ensuring 100% text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#fbf7dc]/90 via-[#fbf7dc]/60 to-[#fbf7dc]/80" />
+          <div
+            className="absolute inset-0 transition-colors duration-500"
+            style={{
+              background: 'radial-gradient(circle at center, var(--bg-glass-card), var(--bg-primary) 85%)',
+              opacity: 0.88
+            }}
+          />
         </div>
       )}
 
-      {/* Hanging Left Bookmark: START TYPING (Typing Club signature) */}
-      <div className="absolute -top-1 left-6 sm:left-10 z-10">
-        <div className="bg-[#f0c242] text-[#594200] font-black text-[11px] sm:text-xs uppercase tracking-wider py-4 px-3 rounded-b-xl shadow-md flex flex-col items-center justify-center text-center w-14 sm:w-16 border-b-2 border-[#d4a82b]">
-          <span>START</span>
-          <span>TYPING</span>
-        </div>
-      </div>
+      {/* Combo flash overlay */}
+      {showComboFlash && (
+        <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none z-0 animate-fadeIn" />
+      )}
 
-      {/* Top Right: Hide Background Toggle & Dialogue Bubble */}
-      <div className="relative z-10 w-full flex items-center justify-between pl-18 sm:pl-24 pr-2">
-        {/* Glamour / Dialogue Tag */}
-        <div className="flex items-center gap-2">
-          <span
-            className="text-xs font-black px-3 py-1 rounded-full shadow-xs border flex items-center gap-1.5"
-            style={{
-              backgroundColor: `${currentTier.themeColor}20`,
-              color: currentTier.themeColor,
-              borderColor: `${currentTier.themeColor}50`
-            }}
+      {/* Top Bar: Tier Avatar + Badge + Dialogue + Progress & Photo Toggle */}
+      <div className="relative z-10 px-4 sm:px-8 pt-4 sm:pt-5 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {/* Tier Avatar Character Photo */}
+          <div
+            onClick={onOpenCustomPhotos}
+            className="relative flex-shrink-0 cursor-pointer group/avatar"
+            title="Click to customize tier photos"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            {currentTier.name} ({currentTier.targetSpeed})
-          </span>
-          <span className="text-xs text-slate-600 font-medium italic hidden sm:inline">
-            "{dialogue}"
-          </span>
+            <div
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 shadow-lg transition-all duration-300 group-hover/avatar:scale-105 group-hover/avatar:shadow-xl"
+              style={{
+                borderColor: currentTier.themeColor,
+                boxShadow: `0 0 16px ${currentTier.themeColor}40`
+              }}
+            >
+              <img
+                src={activeAvatar}
+                alt={currentTier.name}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover/avatar:scale-110"
+              />
+            </div>
+            {/* Tier mini badge overlay */}
+            <span
+              className="absolute -bottom-1 -right-1 text-[10px] font-black px-1.5 py-0.5 rounded-md text-white shadow-md flex items-center gap-0.5"
+              style={{ backgroundColor: currentTier.themeColor }}
+            >
+              T{currentTier.tier}
+            </span>
+          </div>
+
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all duration-500 shadow-sm"
+                style={{
+                  background: `${currentTier.themeColor}20`,
+                  color: currentTier.themeColor,
+                  border: `1px solid ${currentTier.themeColor}30`,
+                  boxShadow: `0 0 20px ${currentTier.themeColor}15`
+                }}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {currentTier.name}
+              </span>
+              <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                {currentTier.targetSpeed}
+              </span>
+            </div>
+
+            {/* Character Reaction Dialogue */}
+            <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-semibold italic mt-1 max-w-[280px] sm:max-w-[420px] truncate">
+              "{dialogue}"
+            </span>
+          </div>
         </div>
 
-        {/* Hide Background toggle */}
-        <button
-          onClick={() => setShowBgImage(!showBgImage)}
-          className="text-xs text-slate-500 hover:text-slate-800 font-medium flex items-center gap-1 cursor-pointer bg-white/70 px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs"
-        >
-          {showBgImage ? 'Hide Photo ×' : 'Show Photo 🖼️'}
-        </button>
+        {/* Right side: Photo Toggle & Progress */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          {/* Background Photo Toggle Button */}
+          <button
+            onClick={() => setShowBgPhoto(!showBgPhoto)}
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl glass-light hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-all text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+            title={showBgPhoto ? "Hide Background Photo" : "Show Background Photo"}
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">{showBgPhoto ? "Photo On" : "Photo Off"}</span>
+          </button>
+
+          {/* Progress indicator */}
+          {hasStarted && (
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{progressPercent}%</span>
+              <div className="w-16 sm:w-24 h-2 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Main Text Lines Display with Underline Guides (Exact Typing Club typography) */}
-      <div className="relative z-10 my-auto py-6 pl-2 sm:pl-6 pr-2">
-        <div className="font-serif text-2xl sm:text-4xl text-[#2d2926] leading-relaxed sm:leading-loose tracking-wide break-words">
+      {/* ─── "Start Typing" Prompt ─── */}
+      {!hasStarted && (
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          <div className="flex flex-col items-center gap-3 animate-breathe">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 flex items-center justify-center shadow-lg shadow-indigo-500/10">
+              <Zap className="w-7 h-7 text-indigo-400" />
+            </div>
+            <span className="text-sm font-bold text-slate-400">Start Typing</span>
+            <span className="text-xs text-slate-600">Press any key to begin...</span>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Main Text Display ─── */}
+      <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-5 sm:px-10 py-4 sm:py-6 transition-opacity duration-300 ${!hasStarted ? 'opacity-60' : 'opacity-100'}`}>
+        <div className="font-['Playfair_Display'] text-xl sm:text-3xl leading-relaxed sm:leading-loose tracking-wide break-words w-full">
           {targetChars.map((char, index) => {
             const isCurrent = index === currentIdx;
             const isTyped = index < currentIdx;
@@ -114,10 +211,10 @@ export default function TypingArea({
               return (
                 <span
                   key={index}
-                  className={`inline transition-colors font-serif ${
+                  className={`inline transition-all duration-150 ${
                     isCorrect
-                      ? 'text-[#2b8a3e] font-semibold'
-                      : 'text-[#e03131] bg-red-200/60 rounded-xs px-0.5 font-bold line-through'
+                      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                      : 'text-red-600 dark:text-red-400 bg-red-500/20 rounded px-0.5 font-bold'
                   }`}
                 >
                   {isSpace ? '\u00A0' : char}
@@ -129,11 +226,24 @@ export default function TypingArea({
               return (
                 <span
                   key={index}
-                  className="relative inline text-[#1971c2] font-bold"
+                  data-active="true"
+                  className="relative inline font-black rounded px-1 transition-all"
+                  style={{
+                    color: 'var(--text-heading)',
+                    backgroundColor: `${currentTier.themeColor}25`,
+                    boxShadow: `0 0 12px ${currentTier.themeColor}30`
+                  }}
                 >
-                  {/* Typing Club active character underline / cursor */}
-                  <span className="absolute -bottom-1 left-0 right-0 h-1 bg-[#1971c2] rounded-full animate-pulse shadow-sm shadow-blue-500/50" />
-                  {isSpace ? '\u00A0' : char}
+                  {/* Active cursor line */}
+                  <span
+                    className="absolute -bottom-1 left-0 right-0 h-[3.5px] rounded-full animate-typing-cursor"
+                    style={{ background: `linear-gradient(90deg, ${currentTier.themeColor}, ${currentTier.themeColor}99)` }}
+                  />
+                  {isSpace ? (
+                    <span className="opacity-60 font-mono text-[0.85em]">␣</span>
+                  ) : (
+                    char
+                  )}
                 </span>
               );
             }
@@ -142,7 +252,8 @@ export default function TypingArea({
             return (
               <span
                 key={index}
-                className="text-[#495057] opacity-85 inline font-normal"
+                className="inline font-normal transition-colors"
+                style={{ color: 'var(--text-muted)' }}
               >
                 {isSpace ? '\u00A0' : char}
               </span>
@@ -151,29 +262,37 @@ export default function TypingArea({
         </div>
       </div>
 
-      {/* Bottom Underline Guide & Live Speed/Combo Status */}
-      <div className="relative z-10 w-full pt-3 border-t border-amber-300/50 flex items-center justify-between text-xs text-slate-600 font-sans">
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-slate-700 font-mono">
-            Speed: <strong className="text-blue-700">{wpm} WPM</strong>
+      {/* ─── Bottom Status Bar ─── */}
+      <div className="relative z-10 w-full px-4 sm:px-8 py-3 border-t border-white/[0.05] flex items-center justify-between text-xs">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <span className="flex items-center gap-1.5 text-slate-400 font-mono font-bold">
+            <Zap className="w-3 h-3 text-amber-400" />
+            <strong className="text-amber-300">{wpm}</strong>
+            <span className="text-slate-600 text-[10px]">WPM</span>
           </span>
-          <span className="text-slate-400">|</span>
-          <span className="font-bold text-slate-700 font-mono">
-            Accuracy: <strong className={accuracy >= 90 ? 'text-emerald-700' : 'text-amber-700'}>{accuracy}%</strong>
+
+          <span className="flex items-center gap-1.5 text-slate-400 font-mono font-bold">
+            <Target className="w-3 h-3 text-emerald-400" />
+            <strong className={accuracy >= 90 ? 'text-emerald-300' : 'text-amber-300'}>{accuracy}%</strong>
           </span>
+
           {combo >= 5 && (
-            <>
-              <span className="text-slate-400">|</span>
-              <span className="font-bold text-amber-700 flex items-center gap-1">
-                <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500 animate-bounce" />
-                {combo}x Streak
-              </span>
-            </>
+            <span className="flex items-center gap-1 font-bold text-orange-400 animate-scale-in">
+              <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500 animate-pulse" />
+              <span className="font-mono">{combo}x</span>
+              <span className="text-[10px] text-orange-300/80">Streak</span>
+            </span>
           )}
         </div>
 
-        <div className="text-[11px] text-slate-500 hidden sm:inline">
-          {wpm >= 9 ? '👑 Max Level 5 Active!' : `Reach 9-10 WPM for Level 5`}
+        <div className="text-[10px] text-slate-600 font-medium hidden sm:flex items-center gap-1.5">
+          {isFinished ? (
+            <span className="text-emerald-400 font-bold flex items-center gap-1">
+              <Sparkles className="w-3 h-3" /> Complete!
+            </span>
+          ) : (
+            <span>{currentIdx} / {targetText.length} characters</span>
+          )}
         </div>
       </div>
     </div>

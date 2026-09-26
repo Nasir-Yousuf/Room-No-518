@@ -1,22 +1,160 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ═══════════════════════════════════════════════════
+   TYPING CLUB — AWARD-WINNING DESIGN SYSTEM
+   Dual-theme (Day/Night) with glassmorphism & micro-animations
+   ═══════════════════════════════════════════════════ */
+
+/* ─── Default Day Theme: Warm #F7F2CF Cream Aesthetic ─── */
+:root {
+  --bg-primary: #F7F2CF;
+  --bg-secondary: #eee8be;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --bg-glass: rgba(255, 255, 255, 0.82);
+  --bg-glass-light: rgba(247, 242, 207, 0.7);
+  --bg-glass-strong: rgba(247, 242, 207, 0.95);
+  --bg-glass-card-shadow: rgba(140, 120, 40, 0.08);
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-heading: #0f172a;
+  --border-subtle: rgba(180, 160, 80, 0.22);
+  --border-light: rgba(180, 160, 80, 0.16);
+  --border-strong: rgba(180, 160, 80, 0.32);
+  --scrollbar-track: #eee8be;
+  --scrollbar-thumb: linear-gradient(180deg, rgba(217, 119, 6, 0.5), rgba(99, 102, 241, 0.5));
+  --scrollbar-thumb-hover: linear-gradient(180deg, rgba(217, 119, 6, 0.8), rgba(99, 102, 241, 0.8));
+  --selection-bg: rgba(217, 119, 6, 0.25);
+  --selection-color: #0f172a;
+  --keyboard-bg: #FAF5D6;
+  --keyboard-border: rgba(217, 191, 113, 0.9);
+  --key-bg: #ffffff;
+  --key-text: #1e293b;
+  --key-border: #f1e7b8;
+  --key-bump: #d97706;
+  --cloud-color: rgba(255, 255, 255, 0.85);
+  --lesson-map-bg: #F7F2CF;
+  --results-bg: #FAF5D6;
+  --results-header-bg: rgba(247, 242, 207, 0.95);
+  --results-gauge-bg: #ffffff;
+  --results-gauge-border: rgba(217, 119, 6, 0.8);
+  --noise-opacity: 0.015;
+}
+
+html.light-theme {
+  --bg-primary: #F7F2CF;
+  --bg-secondary: #eee8be;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --bg-glass: rgba(255, 255, 255, 0.82);
+  --bg-glass-light: rgba(247, 242, 207, 0.7);
+  --bg-glass-strong: rgba(247, 242, 207, 0.95);
+  --bg-glass-card-shadow: rgba(140, 120, 40, 0.08);
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-heading: #0f172a;
+  --border-subtle: rgba(180, 160, 80, 0.22);
+  --border-light: rgba(180, 160, 80, 0.16);
+  --border-strong: rgba(180, 160, 80, 0.32);
+  --scrollbar-track: #eee8be;
+  --scrollbar-thumb: linear-gradient(180deg, rgba(217, 119, 6, 0.5), rgba(99, 102, 241, 0.5));
+  --scrollbar-thumb-hover: linear-gradient(180deg, rgba(217, 119, 6, 0.8), rgba(99, 102, 241, 0.8));
+  --selection-bg: rgba(217, 119, 6, 0.25);
+  --selection-color: #0f172a;
+  --keyboard-bg: #FAF5D6;
+  --keyboard-border: rgba(217, 191, 113, 0.9);
+  --key-bg: #ffffff;
+  --key-text: #1e293b;
+  --key-border: #f1e7b8;
+  --key-bump: #d97706;
+  --cloud-color: rgba(255, 255, 255, 0.85);
+  --lesson-map-bg: #F7F2CF;
+  --results-bg: #FAF5D6;
+  --results-header-bg: rgba(247, 242, 207, 0.95);
+  --results-gauge-bg: #ffffff;
+  --results-gauge-border: rgba(217, 119, 6, 0.8);
+  --noise-opacity: 0.015;
+}
+
+/* ─── Night Theme: The Dark Cosmic Glassmorphism Version ─── */
+html.dark-theme,
+html.dark {
+  --bg-primary: #050a18;
+  --bg-secondary: #0f172a;
+  --bg-card: rgba(15, 23, 42, 0.4);
+  --bg-glass: rgba(15, 23, 42, 0.6);
+  --bg-glass-light: rgba(255, 255, 255, 0.05);
+  --bg-glass-strong: rgba(15, 23, 42, 0.75);
+  --bg-glass-card-shadow: rgba(0, 0, 0, 0.3);
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-heading: #ffffff;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.1);
+  --scrollbar-track: rgba(15, 23, 42, 0.4);
+  --scrollbar-thumb: linear-gradient(180deg, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.5));
+  --scrollbar-thumb-hover: linear-gradient(180deg, rgba(99, 102, 241, 0.8), rgba(139, 92, 246, 0.8));
+  --selection-bg: rgba(99, 102, 241, 0.4);
+  --selection-color: #fff;
+  --keyboard-bg: #faf4d0;
+  --keyboard-border: rgba(217, 191, 113, 0.8);
+  --key-bg: #fffdf0;
+  --key-text: #495057;
+  --key-border: #f1e7b8;
+  --key-bump: #d4a017;
+  --cloud-color: rgba(255, 255, 255, 0.7);
+  --lesson-map-bg: #050a18;
+  --results-bg: #274872;
+  --results-header-bg: rgba(32, 60, 97, 0.7);
+  --results-gauge-bg: #1e385c;
+  --results-gauge-border: rgba(251, 191, 36, 0.9);
+  --noise-opacity: 0.03;
+}
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     margin: 0;
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #030712;
-    color: #f8fafc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     overflow-x: hidden;
+    min-height: 100vh;
+    transition: background-color 0.5s ease, color 0.4s ease;
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-color);
   }
 }
 
-/* Custom Keyframe Animations */
+/* ═══════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════ */
+
 @keyframes errorShake {
   0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-8px) rotate(-2deg); }
-  40% { transform: translateX(8px) rotate(2deg); }
-  60% { transform: translateX(-6px) rotate(-1deg); }
-  80% { transform: translateX(6px) rotate(1deg); }
+  15% { transform: translateX(-10px) rotate(-2deg); }
+  30% { transform: translateX(10px) rotate(2deg); }
+  45% { transform: translateX(-8px) rotate(-1.5deg); }
+  60% { transform: translateX(8px) rotate(1.5deg); }
+  75% { transform: translateX(-4px) rotate(-0.5deg); }
+  90% { transform: translateX(4px) rotate(0.5deg); }
 }
 
 @keyframes shimmer {
@@ -25,12 +163,94 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(1deg); }
+  75% { transform: translateY(4px) rotate(-1deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6), 0 0 60px rgba(99, 102, 241, 0.2); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes glow-ring {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+@keyframes typing-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+}
+
+@keyframes dash-progress {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATION UTILITY CLASSES
+   ═══════════════════════════════════════════════════ */
+
 .animate-errorShake {
-  animation: errorShake 0.4s ease-in-out;
+  animation: errorShake 0.5s ease-in-out;
 }
 
 .animate-shimmer {
@@ -38,21 +258,301 @@
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.25s ease-out;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Custom Scrollbar */
+.animate-fadeInUp {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-floatSlow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.animate-glow-ring {
+  animation: glow-ring 1.5s ease-out infinite;
+}
+
+.animate-typing-cursor {
+  animation: typing-cursor 1s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 0.5s ease-in-out;
+}
+
+/* ═══════════════════════════════════════════════════
+   GLASSMORPHISM UTILITIES
+   ═══════════════════════════════════════════════════ */
+
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+.glass-light {
+  background: var(--bg-glass-light);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--border-light);
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 8px 32px var(--bg-glass-card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.glass-strong {
+  background: var(--bg-glass-strong);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--border-strong);
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════
+   CUSTOM SCROLLBAR (Premium Dark Theme)
+   ═══════════════════════════════════════════════════ */
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(236, 72, 153, 0.4);
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
+  border: 2px solid transparent;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(236, 72, 153, 0.8);
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* ═══════════════════════════════════════════════════
+   GRADIENT TEXT UTILITY
+   ═══════════════════════════════════════════════════ */
+
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-warm {
+  background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-cool {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════════════
+   STAGGER ANIMATION DELAYS
+   ═══════════════════════════════════════════════════ */
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+
+/* ═══════════════════════════════════════════════════
+   NOISE TEXTURE OVERLAY
+   ═══════════════════════════════════════════════════ */
+
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--noise-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════
+   THEME TOGGLE BUTTON
+   ═══════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════
+   THEME TOGGLE BUTTON
+   ═══════════════════════════════════════════════════ */
+
+.theme-toggle-btn {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(217, 119, 6, 0.25);
+}
+
+.theme-toggle-btn.is-dark,
+html.dark-theme .theme-toggle-btn {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-knob {
+  position: absolute;
+  top: 1px;
+  left: 23px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(180, 140, 50, 0.35);
+}
+
+.theme-toggle-btn.is-dark .theme-toggle-knob,
+html.dark-theme .theme-toggle-knob {
+  left: 2px;
+  background: linear-gradient(135deg, #c7d2fe, #e0e7ff);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   ADAPTIVE THEME TYPOGRAPHY & CARDS
+   ═══════════════════════════════════════════════════ */
+
+/* In #F7F2CF Day mode, adapt standard heading and card colors cleanly */
+:root:not(.dark-theme) h1,
+:root:not(.dark-theme) h2,
+:root:not(.dark-theme) h3,
+:root:not(.dark-theme) h4,
+html.light-theme h1,
+html.light-theme h2,
+html.light-theme h3,
+html.light-theme h4 {
+  color: var(--text-heading);
+}
+
+:root:not(.dark-theme) .text-slate-300,
+html.light-theme .text-slate-300 {
+  color: var(--text-primary);
+}
+
+:root:not(.dark-theme) .text-slate-400,
+html.light-theme .text-slate-400 {
+  color: var(--text-secondary);
+}
+
+:root:not(.dark-theme) .text-slate-500,
+html.light-theme .text-slate-500 {
+  color: var(--text-muted);
+}
+
+:root:not(.dark-theme) .glass-card,
+html.light-theme .glass-card {
+  box-shadow: 0 4px 20px rgba(140, 120, 40, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+:root:not(.dark-theme) .glass-card:hover,
+html.light-theme .glass-card:hover {
+  box-shadow: 0 12px 32px rgba(140, 120, 40, 0.14), inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* ═══════════════════════════════════════════════════
+   LESSON CARD HOVER LABEL STYLING
+   ═══════════════════════════════════════════════════ */
+
+.lesson-card-label {
+  color: var(--text-secondary);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.group:hover .lesson-card-label {
+  color: #4338ca !important; /* Deep vibrant indigo - never disappears in Day mode */
+}
+
+html.dark-theme .lesson-card-label,
+html.dark .lesson-card-label {
+  color: var(--text-secondary);
+}
+
+html.dark-theme .group:hover .lesson-card-label,
+html.dark .group:hover .lesson-card-label {
+  color: #ffffff !important; /* Pure white in Night mode */
+}
+
+/* ═══════════════════════════════════════════════════
+   ULTRA-SMOOTH LESSON CARD HOVER ANIMATION
+   ═══════════════════════════════════════════════════ */
+
+.lesson-card {
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.4s ease,
+              background-color 0.4s ease;
+  will-change: transform, box-shadow;
+  transform: translateY(0) translateZ(0);
+  backface-visibility: hidden;
+}
+
+.lesson-card:hover {
+  transform: translateY(-8px) translateZ(0);
+}
+
+:root:not(.dark-theme) .lesson-card:hover,
+html.light-theme .lesson-card:hover {
+  box-shadow: 0 16px 36px -6px rgba(120, 100, 30, 0.16),
+              0 6px 16px -4px rgba(120, 100, 30, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+html.dark-theme .lesson-card:hover,
+html.dark .lesson-card:hover {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.55),
+              0 0 25px rgba(99, 102, 241, 0.25),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }

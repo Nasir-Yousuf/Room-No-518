@@ -1,141 +1,242 @@
-// Typing Club 500-Lesson Curriculum Generator & Stages
+// Typing Club 685-Lesson Authentic Curriculum Generator & Stages
+// Modeled directly on the official Typing Club (Typing Jungle) 685-lesson progression
 
 export const LESSON_STAGES = [
-  { id: 1, name: 'Home Row Basics', range: [1, 50], icon: '🏠', description: 'Master F, J, D, K, S, L, A, ; and core home-row words' },
-  { id: 2, name: 'Top Row Mastery', range: [51, 120], icon: '🎯', description: 'Reach upward for E, I, R, U, T, Y, W, O, Q, P' },
-  { id: 3, name: 'Bottom Row Keys', range: [121, 180], icon: '🔻', description: 'Reach downward for V, M, B, N, C, X, Z' },
-  { id: 4, name: 'Shift & Capitals', range: [181, 240], icon: '⬆️', description: 'Left and Right Shift keys for proper capitalization' },
-  { id: 5, name: 'Numbers & Symbols', range: [241, 300], icon: '🔢', description: 'Top number row, percentages, currency, and punctuation' },
-  { id: 6, name: 'Fluency & Speed', range: [301, 380], icon: '⚡', description: 'High-frequency English phrases and fluid rhythm drills' },
-  { id: 7, name: 'Literature & Speeches', range: [381, 450], icon: '📜', description: 'Famous historical speeches, science, philosophy, and essays' },
-  { id: 8, name: 'Grandmaster Typist', range: [451, 500], icon: '👑', description: 'Expert speed sprints, legal texts, tongue twisters, and tests' }
+  { id: 1, name: 'Home Row Basics', range: [1, 85], icon: '🏠', description: 'Master F, J, D, K, S, L, A, ; and core home-row words' },
+  { id: 2, name: 'Top Row Keys', range: [86, 175], icon: '🎯', description: 'Reach upward for E, I, R, U, T, Y, W, O, Q, P' },
+  { id: 3, name: 'Bottom Row Keys', range: [176, 260], icon: '🔻', description: 'Reach downward for V, M, B, N, C, ,, X, ., Z, /' },
+  { id: 4, name: 'Shift & Capitalization', range: [261, 350], icon: '⬆️', description: 'Left and Right Shift keys for proper capitalization and basic punctuation' },
+  { id: 5, name: 'Numbers Row', range: [351, 440], icon: '🔢', description: 'Master 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 with correct finger reaches' },
+  { id: 6, name: 'Symbols & Code Syntax', range: [441, 525], icon: '⚡', description: 'Special characters: !, @, #, $, %, &, *, (, ), _, +, =, <, >' },
+  { id: 7, name: 'Fluency & Literature', range: [526, 610], icon: '📜', description: 'Historical speeches, philosophy, science, and rhythmic prose' },
+  { id: 8, name: 'Grandmaster & Graduation', range: [611, 685], icon: '👑', description: 'Expert speed sprints, legal and literary tests to Lesson 685 graduation' }
 ];
 
-// Base seed content for rich programmatic 500 lessons
-const HOME_ROW_PATTERNS = [
-  'fff jjj fff jjj fj fj jf jf ff jj ff jj',
-  'ddd kkk ddd kkk dk dk kd kd dd kk dd kk',
-  'fjdk fjdk kdjf kdjf ffjj kkdd fjdk jfkd',
-  'sss lll sss lll sl sl ls ls ss ll ss ll',
-  'aaa ;;; aaa ;;; a; a; ;a ;a aa ;; aa ;;',
-  'asdf jkl; asdf jkl; fdsa ;lkj asdf jkl;',
+// Progressive Seed Drills for Beginners through Masters
+
+// 1. Home Row Step-by-Step Drills
+const HOME_ROW_STEPS = [
+  'f j f j fj jf ff jj ff jj jf fj',
+  'f f f j j j f j f j ff jj ff jj',
+  'd k d k dk kd dd kk dd kk kd dk',
+  'f j d k fjdk kdjf ffjj kkdd fjdk',
+  's l s l sl ls ss ll ss ll ls sl',
+  'a ; a ; a; ;a aa ;; aa ;; ;a a;',
+  'asdf jkl; asdf jkl; fdsa ;lkj asdf',
+  'ask dad lad sad fall flash glad dash',
   'all fall flash salad flask lad ask fall',
-  'sad dad lad ask fall flash glad dash flag',
   'half flask salad fall glad lad dad sad ask',
-  'a sad lad had a salad as a flash fall'
+  'a sad lad had a salad as a flash fall',
+  'ask all dads for salads and a flask',
+  'dad asks a lad for a salad and a flag',
+  'fall leaves fall as a sad lad asks dad',
+  'flash dash flag glad half ask dad salad'
 ];
 
-const TOP_ROW_WORDS = [
+// 2. Top Row Words & Drills
+const TOP_ROW_STEPS = [
+  'e i e i ei ie ee ii feed side ride',
+  'r u r u ru ur rr uu true pure sure',
+  't y t y ty yt tt yy they duty city',
+  'w o w o wo ow ww oo write word slow',
+  'q p q p qp pq qq pp quick drop prep',
   'tree water write quiet power require output input yellow',
   'people write letter report power figure energy future',
   'quick white route report write return upper water quiet',
   'youth weight tower quote figure output yellow people write',
-  'try your power to write true reports with perfect quiet focus'
+  'try your power to write true reports with perfect quiet focus',
+  'we require true quiet power to write every single letter',
+  'yellow towers rise quietly where pure water flows quickly',
+  'our people write weekly reports about energy and future power'
 ];
 
-const BOTTOM_ROW_WORDS = [
+// 3. Bottom Row Words & Drills
+const BOTTOM_ROW_STEPS = [
+  'v m v m vm mv vv mm move view name',
+  'b n b n bn nb bb nn burn bone bank',
+  'c , c , c, ,c cc ,, calm come cool,',
+  'x . x . x. .x xx .. exact box six.',
+  'z / z / z/ /z zz // zero zone size/',
   'voice music move brave claim mixed zebra visual calm',
   'bank zero carbon volume normal complex novel dynamic',
   'combine modern visual balance maximum zoom vibe active',
-  'brave minds move music and visual vibes to maximum volume'
+  'brave minds move music and visual vibes to maximum volume',
+  'visualize modern music balance with zero complex barriers.',
+  'move dynamic voices calmly across every single keyboard zone.'
 ];
 
-const SHIFT_SENTENCES = [
+// 4. Shift & Capitalization Sentences
+const SHIFT_STEPS = [
   'The United States, Canada, London, Tokyo, and Paris are global hubs.',
   'Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, and Sunday.',
   'Alice and Bob visited Mount Everest in Nepal during July.',
-  'Great works of Art and Science inspire Humanity across Generations.'
+  'Great works of Art and Science inspire Humanity across Generations.',
+  '"Always remember that practice creates mastery," smiled the teacher.',
+  'Dr. Watson and Sherlock Holmes solved the mystery of Baker Street.',
+  'NASA launched the Apollo mission to land astronauts on the Moon.'
 ];
 
-const SYMBOL_SENTENCES = [
+// 5. Numbers Row Drills
+const NUMBER_STEPS = [
+  '1 2 3 4 5 6 7 8 9 0 12 34 56 78 90',
+  'In the year 1776, exactly 56 delegates signed the declaration.',
+  'Call customer service at (800) 555-0199 between 9 AM and 5 PM.',
+  'Flight 248 departs from Gate 12B at 14:35 on November 28, 2026.',
+  'The recipe calls for 2 cups of flour, 1/2 tsp salt, and 350 degrees F.'
+];
+
+// 6. Symbols & Code Syntax Drills
+const SYMBOL_STEPS = [
   'Order #1049: 15 items @ $49.99 each = $749.85 (Tax: 8.5%).',
-  'Phone: (555) 234-5678 | Email: support@typingclub.edu [Verified].',
+  'Phone: (555) 234-5678 | Email: student@typingclub.edu [Verified].',
   'Result = (x + y) * (a - b) / 100; if (count >= 50) return true;',
-  'Speed: 100% accuracy & 0 errors! That\'s a 10/10 performance!'
+  'const token = { id: 42, auth: "admin", active: true, balance: $120.00 };',
+  'Speed: 100% accuracy & 0 errors! That\'s a 10/10 performance rating!',
+  'tags: ["react", "vite", "web-audio"]; status: 200 OK (latency: < 5ms);'
 ];
 
-const LITERATURE_PARAGRAPHS = [
-  'Freedom of speech is the belief that people have the right to express their opinions and ideas without fear that they will be in legal trouble. However, practice makes typing effortless.',
+// 7. Literature & Famous Speeches
+const LITERATURE_STEPS = [
+  'Freedom of speech is the belief that people have the right to express their opinions and ideas without fear that they will be in legal trouble. Practice makes typing effortless.',
   'Two roads diverged in a yellow wood, and sorry I could not travel both and be one traveler, long I stood and looked down one as far as I could to where it bent in the undergrowth.',
   'The only way to do great work is to love what you do. If you have not found it yet, keep looking. Do not settle. As with all matters of the heart, you will know when you find it.',
   'In the beginning the Universe was created. This has made a lot of people very angry and been widely regarded as a bad move. Don\'t panic and always carry a towel.',
   'Logic will get you from A to B. Imagination will take you everywhere in the universe. Curiosity has its own reason for existence.',
-  'To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.'
+  'To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment in life.',
+  'I have a dream that one day this nation will rise up and live out the true meaning of its creed: We hold these truths to be self-evident, that all men are created equal.'
 ];
 
-const MASTER_TEXTS = [
+// 8. Grandmaster Trials & Final Graduation
+const MASTER_STEPS = [
   'Peter Piper picked a peck of pickled peppers. If Peter Piper picked a peck of pickled peppers, where is the peck of pickled peppers Peter Piper picked at maximum velocity?',
   'How much wood would a woodchuck chuck if a woodchuck could chuck wood without missing a single beat or hesitating on the home row keys during a 100 WPM speed sprint?',
-  'The quick brown fox jumps effortlessly over thirty lazy dogs while dazzling keyboard wizards conquer every single lesson from one to five hundred in radiant glory!'
+  'The quick brown fox jumps effortlessly over thirty lazy dogs while dazzling keyboard wizards conquer every single lesson from one to six hundred eighty-five in radiant glory!',
+  'Typing with ten fingers at high speeds is an extraordinary blend of muscle memory, visual reflexes, rhythmic breathing, and effortless focus on every keystroke.',
+  'Congratulations! You have reached Lesson 685, the pinnacle of the Typing Club curriculum. You are now officially certified as a Grandmaster Typist with world-class accuracy!'
 ];
 
-// Generate 500 Progressive Lessons
+// Generate Exactly 685 Lessons matching Typing Club's complete curriculum
 export function generateAllLessons() {
   const lessons = [];
 
-  for (let i = 1; i <= 500; i++) {
+  for (let i = 1; i <= 685; i++) {
     let stageId = 1;
     let difficulty = 'Easy';
     let targetWpm = 10;
     let title = `Lesson ${i}`;
     let text = '';
 
-    if (i <= 50) {
+    // Stage 1: Home Row (1 to 85)
+    if (i <= 85) {
       stageId = 1;
-      difficulty = i < 20 ? 'Easy' : 'Medium';
+      difficulty = i <= 20 ? 'Easy' : 'Medium';
       targetWpm = 10;
-      const patternIdx = (i - 1) % HOME_ROW_PATTERNS.length;
-      title = i <= 5 ? `Anchor Keys (Lesson ${i})` : i <= 25 ? `Home Row Drills ${i}` : `Home Row Words ${i}`;
-      text = HOME_ROW_PATTERNS[patternIdx];
-    } else if (i <= 120) {
+      if (i === 1) {
+        title = 'Introduction to Typing';
+        text = 'f j f j fj jf ff jj';
+      } else if (i === 2) {
+        title = 'Keys F and J';
+        text = 'fff jjj fff jjj fj fj jf jf ff jj';
+      } else if (i === 3) {
+        title = 'Space Bar';
+        text = 'f j f j  f j f j  fj jf fj jf';
+      } else if (i === 4) {
+        title = 'Keys D and K';
+        text = 'ddd kkk ddd kkk dk kd dd kk';
+      } else if (i === 5) {
+        title = 'Keys S and L';
+        text = 'sss lll sss lll sl ls ss ll';
+      } else if (i === 6) {
+        title = 'Keys A and ;';
+        text = 'aaa ;;; aaa ;;; a; ;a aa ;;';
+      } else {
+        const stepIdx = (i - 7) % HOME_ROW_STEPS.length;
+        title = `Home Row Drill ${i}`;
+        text = HOME_ROW_STEPS[stepIdx];
+      }
+    }
+    // Stage 2: Top Row Keys (86 to 175)
+    else if (i <= 175) {
       stageId = 2;
       difficulty = 'Medium';
       targetWpm = 10;
-      const wordIdx = (i - 51) % TOP_ROW_WORDS.length;
-      title = `Top Row Workout ${i}`;
-      text = TOP_ROW_WORDS[wordIdx];
-    } else if (i <= 180) {
+      const stepIdx = (i - 86) % TOP_ROW_STEPS.length;
+      if (i === 89) title = 'Using Ten Fingers';
+      else if (i === 90) title = 'Increase Speed';
+      else if (i === 91) title = 'Practice';
+      else if (i === 92) title = "Don't Look Down";
+      else if (i === 93) title = 'Practice R Hand';
+      else if (i === 94) title = 'Play: Words';
+      else if (i === 95) title = 'Staring at Screen';
+      else if (i === 96) title = 'Take Breaks';
+      else if (i === 97) title = 'Look Away';
+      else if (i === 98) title = 'Active Breaks';
+      else if (i === 99) title = 'Practice L Hand';
+      else if (i === 100) title = 'Play: Numbers';
+      else if (i === 101) title = 'Muscle Memory';
+      else if (i === 102) title = 'Good Posture';
+      else if (i === 103) title = 'Adjust Your Screen';
+      else title = `Top Row Workout ${i}`;
+      text = TOP_ROW_STEPS[stepIdx];
+    }
+    // Stage 3: Bottom Row Keys (176 to 260)
+    else if (i <= 260) {
       stageId = 3;
       difficulty = 'Medium';
       targetWpm = 10;
-      const wordIdx = (i - 121) % BOTTOM_ROW_WORDS.length;
+      const stepIdx = (i - 176) % BOTTOM_ROW_STEPS.length;
       title = `Bottom Row Flow ${i}`;
-      text = BOTTOM_ROW_WORDS[wordIdx];
-    } else if (i <= 240) {
+      text = BOTTOM_ROW_STEPS[stepIdx];
+    }
+    // Stage 4: Shift & Capitalization (261 to 350)
+    else if (i <= 350) {
       stageId = 4;
       difficulty = 'Hard';
       targetWpm = 10;
-      const shiftIdx = (i - 181) % SHIFT_SENTENCES.length;
+      const stepIdx = (i - 261) % SHIFT_STEPS.length;
       title = `Shift & Capitals ${i}`;
-      text = SHIFT_SENTENCES[shiftIdx];
-    } else if (i <= 300) {
+      text = SHIFT_STEPS[stepIdx];
+    }
+    // Stage 5: Numbers Row (351 to 440)
+    else if (i <= 440) {
       stageId = 5;
       difficulty = 'Hard';
       targetWpm = 10;
-      const symIdx = (i - 241) % SYMBOL_SENTENCES.length;
-      title = `Numbers & Symbols ${i}`;
-      text = SYMBOL_SENTENCES[symIdx];
-    } else if (i <= 380) {
+      const stepIdx = (i - 351) % NUMBER_STEPS.length;
+      title = `Numbers Drill ${i}`;
+      text = NUMBER_STEPS[stepIdx];
+    }
+    // Stage 6: Symbols & Code Syntax (441 to 525)
+    else if (i <= 525) {
       stageId = 6;
       difficulty = 'Hard';
       targetWpm = 10;
-      const litIdx = (i - 301) % LITERATURE_PARAGRAPHS.length;
-      title = `Fluency Sprint ${i}`;
-      text = LITERATURE_PARAGRAPHS[litIdx];
-    } else if (i <= 450) {
+      const stepIdx = (i - 441) % SYMBOL_STEPS.length;
+      title = `Symbols & Syntax ${i}`;
+      text = SYMBOL_STEPS[stepIdx];
+    }
+    // Stage 7: Fluency & Literature (526 to 610)
+    else if (i <= 610) {
       stageId = 7;
       difficulty = 'Expert';
       targetWpm = 10;
-      const litIdx = (i - 381) % LITERATURE_PARAGRAPHS.length;
-      title = i === 518 ? `Freedom of Speech` : `Literature & Speech ${i}`;
-      text = LITERATURE_PARAGRAPHS[litIdx];
-    } else {
+      const stepIdx = (i - 526) % LITERATURE_STEPS.length;
+      title = `Literature & Speech ${i}`;
+      text = LITERATURE_STEPS[stepIdx];
+    }
+    // Stage 8: Grandmaster & Graduation (611 to 685)
+    else {
       stageId = 8;
       difficulty = 'Grandmaster';
       targetWpm = 10;
-      const masterIdx = (i - 451) % MASTER_TEXTS.length;
-      title = `Grandmaster Trial ${i}`;
-      text = MASTER_TEXTS[masterIdx];
+      const stepIdx = (i - 611) % MASTER_STEPS.length;
+      if (i === 685) {
+        title = 'Lesson 685: Grandmaster Graduation Exam 👑';
+        text = 'Congratulations! You have conquered all 685 lessons of Typing Club! Your ten fingers now fly across the keyboard with effortless speed, divine precision, and magnificent flow!';
+      } else {
+        title = `Grandmaster Trial ${i}`;
+        text = MASTER_STEPS[stepIdx];
+      }
     }
 
     lessons.push({
@@ -152,15 +253,15 @@ export function generateAllLessons() {
   return lessons;
 }
 
-export const ALL_500_LESSONS = generateAllLessons();
+export const ALL_685_LESSONS = generateAllLessons();
+export const ALL_500_LESSONS = ALL_685_LESSONS; // Backwards-compatible alias
 
-// Legacy compatibility wrapper
 export const LESSON_CATEGORIES = LESSON_STAGES.map((stage) => ({
   id: `stage-${stage.id}`,
   name: stage.name,
   description: stage.description,
   icon: 'Keyboard',
-  lessons: ALL_500_LESSONS.filter((l) => l.stageId === stage.id)
+  lessons: ALL_685_LESSONS.filter((l) => l.stageId === stage.id)
 }));
 
 // 5 Beauty & Aesthetic Tiers based on 3, 5, 7, 9, 10+ WPM
