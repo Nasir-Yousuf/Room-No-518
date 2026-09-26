@@ -14,6 +14,7 @@ export default function TypingArea({
   customAvatars = {},
   lastErrorTrigger,
   glamourScore,
+  isDark = false,
   onOpenCustomPhotos,
   onRestart,
   onNextLesson,
@@ -68,36 +69,71 @@ export default function TypingArea({
   const progressPercent = targetText.length > 0 ? Math.round((currentIdx / targetText.length) * 100) : 0;
 
   return (
-    <div className={`relative w-full min-h-[280px] sm:min-h-[340px] glass-card rounded-2xl sm:rounded-3xl overflow-hidden flex flex-col justify-between select-none transition-all duration-500 ${
-      shaking ? 'animate-errorShake ring-2 ring-red-500/50' : ''
-    }`}>
+    <div
+      className={`relative w-full min-h-[300px] sm:min-h-[350px] rounded-2xl sm:rounded-3xl border overflow-hidden flex flex-col justify-between select-none transition-all duration-500 ${
+        shaking ? 'animate-errorShake ring-2 ring-red-500/50' : ''
+      }`}
+      style={{
+        backgroundColor: isDark ? 'rgba(15, 23, 42, 0.85)' : '#fbf7dc',
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(217, 191, 113, 0.55)',
+        boxShadow: isDark
+          ? '0 12px 40px rgba(0, 0, 0, 0.45)'
+          : '0 10px 30px rgba(180, 150, 70, 0.15), 0 2px 8px rgba(180, 150, 70, 0.08)'
+      }}
+    >
       {/* Dynamic background glow based on tier */}
       <div
-        className="absolute inset-0 pointer-events-none transition-all duration-1000 opacity-30"
+        className="absolute inset-0 pointer-events-none transition-all duration-1000 opacity-25"
         style={{
-          background: `radial-gradient(ellipse at 50% 0%, ${currentTier.themeColor}15 0%, transparent 60%)`
+          background: `radial-gradient(ellipse at 50% 0%, ${currentTier.themeColor}20 0%, transparent 60%)`
         }}
       />
 
-      {/* Atmospheric Background Tier Photo (Right where user looks while typing) */}
+      {/* Zoomed Full-Space Background Tier Photo with Rich Ambient Color Wash (Like Before) */}
       {showBgPhoto && (
-        <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden">
-          <img
-            src={activeAvatar}
-            alt={currentTier.name}
-            className="w-full h-full object-cover sm:object-contain opacity-35 sm:opacity-45 filter contrast-125 saturate-125 transition-all duration-700 transform scale-105"
-          />
-          {/* Soft wash overlay ensuring 100% text readability while keeping photo clearly visible */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          {/* Base background color */}
           <div
             className="absolute inset-0 transition-colors duration-500"
             style={{
-              background: 'linear-gradient(to bottom, var(--bg-glass-card) 0%, transparent 20%, transparent 80%, var(--bg-glass-card) 100%)'
+              backgroundColor: isDark ? '#080e1e' : '#fbf7dc'
             }}
           />
+
+          {/* Tier theme color subtle glow */}
           <div
-            className="absolute inset-0 transition-colors duration-500 opacity-60"
+            className="absolute inset-0 transition-colors duration-700 pointer-events-none"
             style={{
-              background: 'radial-gradient(ellipse at center, transparent 35%, var(--bg-glass-card) 90%)'
+              backgroundColor: currentTier.themeColor,
+              opacity: isDark ? 0.16 : 0.12
+            }}
+          />
+
+          {/* Full-space Zoomed Character Photo */}
+          <img
+            src={activeAvatar}
+            alt={currentTier.name}
+            className="w-full h-full object-cover object-[center_25%] transition-all duration-700 ease-out transform scale-110 sm:scale-125 filter contrast-110 saturate-125"
+            style={{
+              opacity: isDark ? 0.45 : 0.52
+            }}
+          />
+
+          {/* Rich Background Color Wash over photo (Like Before: Warm Parchment in Day, Deep Glass in Night) */}
+          <div
+            className="absolute inset-0 transition-colors duration-500"
+            style={{
+              background: isDark
+                ? 'linear-gradient(to top, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.58) 50%, rgba(15, 23, 42, 0.88) 100%)'
+                : 'linear-gradient(to top, rgba(251, 247, 220, 0.92) 0%, rgba(251, 247, 220, 0.55) 50%, rgba(251, 247, 220, 0.88) 100%)'
+            }}
+          />
+
+          {/* Soft vignette radial focus */}
+          <div
+            className="absolute inset-0 transition-colors duration-500 pointer-events-none"
+            style={{
+              background: `radial-gradient(circle at 50% 50%, transparent 40%, ${isDark ? 'rgba(8, 14, 30, 0.55)' : 'rgba(251, 247, 220, 0.55)'} 100%)`
             }}
           />
         </div>
@@ -315,7 +351,7 @@ export default function TypingArea({
               <span
                 key={index}
                 className="inline font-normal transition-colors"
-                style={{ color: 'var(--text-muted)' }}
+                style={{ color: isDark ? 'rgba(226, 232, 240, 0.75)' : '#334155' }}
               >
                 {isSpace ? '\u00A0' : char}
               </span>
@@ -325,17 +361,19 @@ export default function TypingArea({
       </div>
 
       {/* ─── Bottom Status Bar ─── */}
-      <div className="relative z-10 w-full px-4 sm:px-8 py-3 border-t border-white/[0.05] flex items-center justify-between text-xs">
+      <div className={`relative z-10 w-full px-4 sm:px-8 py-3 border-t flex items-center justify-between text-xs ${
+        isDark ? 'border-white/[0.06]' : 'border-amber-200/60'
+      }`}>
         <div className="flex items-center gap-3 sm:gap-4">
-          <span className="flex items-center gap-1.5 text-slate-400 font-mono font-bold">
-            <Zap className="w-3 h-3 text-amber-400" />
-            <strong className="text-amber-300">{wpm}</strong>
-            <span className="text-slate-600 text-[10px]">WPM</span>
+          <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-mono font-bold">
+            <Zap className="w-3 h-3 text-amber-500 dark:text-amber-400" />
+            <strong className="text-amber-600 dark:text-amber-300">{wpm}</strong>
+            <span className="text-slate-500 dark:text-slate-600 text-[10px]">WPM</span>
           </span>
 
-          <span className="flex items-center gap-1.5 text-slate-400 font-mono font-bold">
-            <Target className="w-3 h-3 text-emerald-400" />
-            <strong className={accuracy >= 90 ? 'text-emerald-300' : 'text-amber-300'}>{accuracy}%</strong>
+          <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-mono font-bold">
+            <Target className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
+            <strong className={accuracy >= 90 ? 'text-emerald-600 dark:text-emerald-300' : 'text-amber-600 dark:text-amber-300'}>{accuracy}%</strong>
           </span>
 
           {combo >= 5 && (

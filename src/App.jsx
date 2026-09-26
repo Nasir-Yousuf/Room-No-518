@@ -458,6 +458,7 @@ export default function App() {
           customAvatars={customAvatars}
           lastErrorTrigger={lastErrorTrigger}
           glamourScore={glamourScore}
+          isDark={isDark}
           onOpenCustomPhotos={() => setShowAvatarModal(true)}
           onRestart={() => resetGame()}
           onNextLesson={handleNextLesson}
