@@ -214,6 +214,18 @@ export default function TypingClubLessonMap({
     setCollapsedStages(prev => ({ ...prev, [stageId]: !prev[stageId] }));
   };
 
+  const scrollToStage = (stageId) => {
+    if (collapsedStages[stageId]) {
+      setCollapsedStages(prev => ({ ...prev, [stageId]: false }));
+    }
+    setTimeout(() => {
+      const el = document.getElementById(`stage-${stageId}`) || document.querySelector(`[data-stage="${stageId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 15);
+  };
+
   return (
     <div className="min-h-screen font-['Roboto'] flex flex-col select-none relative overflow-x-hidden" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <BackgroundParticles />
@@ -355,7 +367,13 @@ export default function TypingClubLessonMap({
           const isCollapsed = collapsedStages[stage.id];
 
           return (
-            <section key={stage.id} className="mb-10 animate-fadeInUp" style={{ animationDelay: `${stageIdx * 0.08}s` }}>
+            <section
+              key={stage.id}
+              id={`stage-${stage.id}`}
+              data-stage={stage.id}
+              className="scroll-mt-24 mb-10 animate-fadeInUp"
+              style={{ animationDelay: `${stageIdx * 0.08}s` }}
+            >
               {/* Stage Header */}
               <button
                 onClick={() => toggleStage(stage.id)}
@@ -489,24 +507,25 @@ export default function TypingClubLessonMap({
       <aside className="fixed right-3 sm:right-5 top-1/2 -translate-y-1/2 hidden lg:flex flex-col items-center glass-strong rounded-2xl py-3 px-1.5 shadow-2xl gap-2 z-30">
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="w-9 h-9 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition cursor-pointer"
+          className="w-9 h-9 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
           title="Scroll to Top"
         >
           <ChevronUp className="w-5 h-5 stroke-[2.5]" />
         </button>
 
-        {LESSON_STAGES.map(stage => {
+        {LESSON_STAGES.map((stage) => {
           const theme = STAGE_THEMES[stage.id];
           return (
             <button
               key={stage.id}
-              onClick={() => {
-                const el = document.querySelector(`[data-stage="${stage.id}"]`);
-                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              onClick={() => scrollToStage(stage.id)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black text-slate-700 dark:text-slate-200 transition-all duration-200 hover:scale-115 active:scale-95 cursor-pointer shadow-xs hover:shadow-md"
+              style={{
+                background: `${theme?.accent || '#6366f1'}30`,
+                border: `1px solid ${theme?.accent || '#6366f1'}50`,
+                color: theme?.accent || '#6366f1'
               }}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-white transition-all hover:scale-110 cursor-pointer"
-              style={{ background: `${theme?.accent || '#6366f1'}20` }}
-              title={stage.name}
+              title={`Jump to Stage ${stage.id}: ${stage.name}`}
             >
               {stage.id}
             </button>
@@ -514,8 +533,8 @@ export default function TypingClubLessonMap({
         })}
 
         <button
-          onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-          className="w-9 h-9 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition cursor-pointer"
+          onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })}
+          className="w-9 h-9 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all hover:scale-110 active:scale-95 cursor-pointer"
           title="Scroll to Bottom"
         >
           <ChevronDown className="w-5 h-5 stroke-[2.5]" />

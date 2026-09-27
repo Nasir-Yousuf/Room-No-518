@@ -234,8 +234,8 @@ export default function TypingArea({
       )}
 
       {/* ─── Main Text Display ─── */}
-      <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-5 sm:px-10 py-4 sm:py-6 transition-opacity duration-300 ${!hasStarted ? 'opacity-60' : 'opacity-100'}`}>
-        <div className="font-['Playfair_Display'] text-xl sm:text-3xl leading-relaxed sm:leading-loose tracking-wide break-words w-full">
+      <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-5 sm:px-10 py-5 sm:py-8 transition-opacity duration-300 ${!hasStarted ? 'opacity-70' : 'opacity-100'}`}>
+        <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-2xl sm:text-3xl md:text-[34px] leading-[2.2] sm:leading-[2.4] tracking-wide break-words w-full select-none">
           {targetChars.map((char, index) => {
             const isCurrent = index === currentIdx;
             const isTyped = index < currentIdx;
@@ -248,10 +248,14 @@ export default function TypingArea({
               return (
                 <span
                   key={index}
-                  className={`inline transition-all duration-150 ${
+                  className={`inline transition-all duration-100 ${
                     isCorrect
-                      ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                      : 'text-red-600 dark:text-red-400 bg-red-500/20 rounded px-0.5 font-bold'
+                      ? isSpace
+                        ? 'bg-white/70 dark:bg-white/10 px-[1.5px] rounded-xs'
+                        : 'bg-white/85 dark:bg-white/15 text-[#24201A] dark:text-slate-100 rounded-xs px-[1px] shadow-[0_1px_1px_rgba(0,0,0,0.05)]'
+                      : isSpace
+                      ? 'bg-rose-200/80 dark:bg-rose-900/60 rounded-xs px-[1.5px]'
+                      : 'bg-rose-200/90 dark:bg-rose-900/70 text-rose-800 dark:text-rose-200 font-bold rounded-xs px-[1px] shadow-[0_1px_1px_rgba(225,29,72,0.15)]'
                   }`}
                 >
                   {isSpace ? '\u00A0' : char}
@@ -264,23 +268,20 @@ export default function TypingArea({
                 <span
                   key={index}
                   data-active="true"
-                  className="relative inline font-black rounded px-1 transition-all"
+                  className={`relative inline font-medium rounded-xs transition-all ${
+                    isSpace
+                      ? 'bg-[#FDE047]/80 dark:bg-amber-400/80 px-[3px]'
+                      : 'bg-[#FDE047] dark:bg-amber-400 text-slate-950 px-[1.5px]'
+                  }`}
                   style={{
-                    color: 'var(--text-heading)',
-                    backgroundColor: `${currentTier.themeColor}25`,
-                    boxShadow: `0 0 12px ${currentTier.themeColor}30`
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
                   }}
                 >
-                  {/* Active cursor line */}
+                  {isSpace ? '\u00A0' : char}
+                  {/* Authentic TypingClub bright blue underline cursor */}
                   <span
-                    className="absolute -bottom-1 left-0 right-0 h-[3.5px] rounded-full animate-typing-cursor"
-                    style={{ background: `linear-gradient(90deg, ${currentTier.themeColor}, ${currentTier.themeColor}99)` }}
+                    className="absolute -bottom-[3.5px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#38BDF8] rounded-full shadow-[0_1px_3px_rgba(37,99,235,0.4)]"
                   />
-                  {isSpace ? (
-                    <span className="opacity-60 font-mono text-[0.85em]">␣</span>
-                  ) : (
-                    char
-                  )}
                 </span>
               );
             }
@@ -289,8 +290,7 @@ export default function TypingArea({
             return (
               <span
                 key={index}
-                className="inline font-normal transition-colors"
-                style={{ color: isDark ? 'rgba(226, 232, 240, 0.75)' : '#334155' }}
+                className="inline transition-colors text-[#2C2720] dark:text-slate-200/85 px-[0.5px]"
               >
                 {isSpace ? '\u00A0' : char}
               </span>
