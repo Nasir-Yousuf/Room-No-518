@@ -19,6 +19,17 @@ import {
   setSoundEnabled
 } from './audio';
 
+export function getLessonTargetText(lesson, lang) {
+  if (!lesson) return ALL_685_LESSONS[0].text;
+  if (lang === 'bn') {
+    if (lesson.words && lesson.words.length > 0) {
+      return lesson.words.map((w) => w.avro).join(' ');
+    }
+    return lesson.phoneticHint || lesson.text;
+  }
+  return lesson.text;
+}
+
 export default function App() {
   // Language mode: 'en' (English) | 'bn' (Bangla Avro)
   const [language, setLanguage] = useState(() => {
@@ -137,34 +148,35 @@ export default function App() {
   }, []);
 
   // Typing States
-  const [targetText, setTargetText] = useState(() => currentLesson?.text || ALL_685_LESSONS[0].text);
+  const [targetText, setTargetText] = useState(() => getLessonTargetText(currentLesson, language));
   const [userInput, setUserInput] = useState('');
-  const [avroWordIndex, setAvroWordIndex] = useState(0);
-  const [avroWordInput, setAvroWordInput] = useState('');
-  const [avroWordResults, setAvroWordResults] = useState([]);
   const [glamourScore, setGlamourScore] = useState(55);
   const [combo, setCombo] = useState(0);
   const [peakCombo, setPeakCombo] = useState(0);
   const [totalErrors, setTotalErrors] = useState(0);
   const [lastErrorTrigger, setLastErrorTrigger] = useState(0);
 
-  // Sync targetText whenever currentLesson changes or typing view opens
+  // Sync targetText whenever currentLesson changes, language switches, or typing view opens
   useEffect(() => {
-    if (currentLesson?.text) {
-      setTargetText(currentLesson.text);
+    if (currentLesson) {
+      const nextTarget = getLessonTargetText(currentLesson, language);
+      setTargetText(nextTarget);
     }
-  }, [currentLesson]);
+  }, [currentLesson, language]);
 
   useEffect(() => {
     if (currentView === 'typing') {
       if (document.activeElement && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
-      if (currentLesson?.text && targetText !== currentLesson.text) {
-        setTargetText(currentLesson.text);
+      if (currentLesson) {
+        const expected = getLessonTargetText(currentLesson, language);
+        if (targetText !== expected) {
+          setTargetText(expected);
+        }
       }
     }
-  }, [currentView, currentLesson, targetText]);
+  }, [currentView, currentLesson, language, targetText]);
 
   // Time & Metrics
   const [_startTime, setStartTime] = useState(null);
@@ -296,16 +308,13 @@ export default function App() {
 
   const resetGame = useCallback((lessonToUse = null, mode = gameMode, langToUse = language) => {
     const lesson = lessonToUse || currentLessonRef.current || currentLesson;
-    let text = lesson.text;
+    let text = getLessonTargetText(lesson, langToUse);
     if (mode === 'blitz30' || mode === 'blitz60') {
       text = "Freedom of speech is the belief that people have the right to express their opinions and ideas without fear that they will be in legal trouble. However, practice makes typing effortless.";
     }
 
     setTargetText(text);
     setUserInput('');
-    setAvroWordIndex(0);
-    setAvroWordInput('');
-    setAvroWordResults([]);
     setGlamourScore(55);
     setCombo(0);
     setPeakCombo(0);
@@ -453,11 +462,10 @@ export default function App() {
     setIsFinished(true);
     setShowResults(true);
 
+    const totalTyped = userInput.length;
     let finalAcc = accuracy;
-    if (language === 'bn') {
-      const totalWords = currentLessonRef.current?.words?.length || 1;
-      const correctWords = avroWordResults.filter((r) => r.isCorrect).length;
-      finalAcc = Math.round((correctWords / Math.max(1, totalWords)) * 100);
+    if (totalTyped > 0) {
+      finalAcc = Math.max(0, Math.round(((totalTyped - totalErrors) / totalTyped) * 100));
       setAccuracy(finalAcc);
     }
 
@@ -499,85 +507,12 @@ export default function App() {
       setStartTime(now);
     }
 
-    // ─── Bangla Avro Phonetic Mode ───
-    if (language === 'bn') {
-      const targetWords = currentLessonRef.current?.words || [];
-      const currentWordObj = targetWords[avroWordIndex] || { bangla: '', avro: '' };
-
-      // Case 1: Space pressed -> commit current word
-      if (charTyped === ' ') {
-        if (!avroWordInput.trim()) return;
-
-        const isMatch = checkAvroWordMatch(avroWordInput, currentWordObj.bangla, currentWordObj.avro);
-
-        if (isMatch) {
-          playKeyClick(true);
-          const newCombo = combo + 1;
-          setCombo(newCombo);
-          if (newCombo > peakCombo) setPeakCombo(newCombo);
-          if (newCombo % 10 === 0) playStreakChime(newCombo);
-
-          recentKeystrokes.current.push(now);
-          recentKeystrokes.current = recentKeystrokes.current.filter((t) => now - t <= 5000);
-          const liveSpeed = Math.round(recentKeystrokes.current.length * 2.4);
-          setWpm(liveSpeed);
-          setGlamourScore(calculateGlamourFromSpeed(liveSpeed));
-
-          setAvroWordResults((prev) => [...prev, { isCorrect: true, typed: avroWordInput }]);
-          const nextWordIdx = avroWordIndex + 1;
-          setAvroWordInput('');
-          setAvroWordIndex(nextWordIdx);
-
-          if (nextWordIdx >= targetWords.length) {
-            finishGame();
-          }
-        } else {
-          playErrorSound();
-          setLastErrorTrigger(now);
-          setCombo(0);
-          setTotalErrors((prev) => prev + 1);
-          errorPenaltyUntil.current = now + 1800;
-          setGlamourScore(15);
-
-          setAvroWordResults((prev) => [...prev, { isCorrect: false, typed: avroWordInput }]);
-          const nextWordIdx = avroWordIndex + 1;
-          setAvroWordInput('');
-          setAvroWordIndex(nextWordIdx);
-
-          if (nextWordIdx >= targetWords.length) {
-            finishGame();
-          }
-        }
-        return;
-      }
-
-      // Case 2: Letter / Character typed
-      playKeyClick(false);
-      const nextWordInput = avroWordInput + charTyped;
-      setAvroWordInput(nextWordInput);
-
-      recentKeystrokes.current.push(now);
-      recentKeystrokes.current = recentKeystrokes.current.filter((t) => now - t <= 5000);
-      const liveSpeed = Math.round(recentKeystrokes.current.length * 2.4);
-      setWpm(liveSpeed);
-      setGlamourScore(calculateGlamourFromSpeed(liveSpeed));
-
-      // Auto-finish on final word if match
-      if (avroWordIndex === targetWords.length - 1) {
-        const isMatch = checkAvroWordMatch(nextWordInput, currentWordObj.bangla, currentWordObj.avro);
-        if (isMatch) {
-          playKeyClick(true);
-          setAvroWordResults((prev) => [...prev, { isCorrect: true, typed: nextWordInput }]);
-          setAvroWordIndex(avroWordIndex + 1);
-          finishGame();
-        }
-      }
-      return;
-    }
-
-    // ─── English Mode (Classic Letter-by-Letter) ───
     const expectedChar = targetText[userInput.length];
-    const isCorrect = charTyped === expectedChar;
+    if (expectedChar === undefined) return;
+
+    // In Bangla mode, accept case-insensitive match (e.g. mobile keyboards auto-capitalizing first letter)
+    const isCorrect = (charTyped === expectedChar) ||
+      (language === 'bn' && typeof expectedChar === 'string' && charTyped.toLowerCase() === expectedChar.toLowerCase());
 
     if (isCorrect) {
       playKeyClick(charTyped === ' ');
@@ -599,7 +534,7 @@ export default function App() {
       const newGlamour = calculateGlamourFromSpeed(liveSpeed);
       setGlamourScore(newGlamour);
 
-      const nextInput = userInput + charTyped;
+      const nextInput = userInput + (language === 'bn' ? expectedChar : charTyped);
       setUserInput(nextInput);
 
       if (nextInput.length >= targetText.length) {
@@ -626,9 +561,6 @@ export default function App() {
     }
   }, [
     language,
-    avroWordIndex,
-    avroWordInput,
-    avroWordResults,
     userInput,
     targetText,
     combo,
@@ -645,22 +577,10 @@ export default function App() {
   const handleBackspace = useCallback(() => {
     if (isFinished || isPaused) return;
 
-    if (language === 'bn') {
-      if (avroWordInput.length > 0) {
-        setAvroWordInput((prev) => prev.slice(0, -1));
-      } else if (avroWordIndex > 0) {
-        const prevIdx = avroWordIndex - 1;
-        setAvroWordIndex(prevIdx);
-        setAvroWordInput(avroWordResults[prevIdx]?.typed || '');
-        setAvroWordResults((prev) => prev.slice(0, -1));
-      }
-      return;
-    }
-
     if (userInput.length > 0) {
       setUserInput((prev) => prev.slice(0, -1));
     }
-  }, [isFinished, isPaused, language, avroWordInput, avroWordIndex, avroWordResults, userInput]);
+  }, [isFinished, isPaused, userInput.length]);
 
   useEffect(() => {
     if (currentView !== 'typing') return;
@@ -703,18 +623,8 @@ export default function App() {
   }, [currentView, showAvatarModal, handleCharTyped, handleBackspace]);
 
   const currentTargetChar = useMemo(() => {
-    if (language === 'bn') {
-      const targetWords = currentLesson?.words || [];
-      const currentWordObj = targetWords[avroWordIndex];
-      if (!currentWordObj) return '';
-      const phonetic = currentWordObj.avro || '';
-      if (avroWordInput.length < phonetic.length) {
-        return phonetic[avroWordInput.length] || '';
-      }
-      return ' '; // Space to complete word
-    }
     return targetText[userInput.length] || '';
-  }, [language, currentLesson, avroWordIndex, avroWordInput, targetText, userInput]);
+  }, [targetText, userInput.length]);
 
   const currentTier = BEAUTY_TIERS.find(
     (t) => glamourScore >= t.minScore && glamourScore <= t.maxScore
@@ -728,8 +638,8 @@ export default function App() {
           currentLessonNumber={currentLesson.number}
           onSelectLesson={handleSelectLesson}
           onBackToTyping={() => {
-            if (currentLesson?.text) {
-              setTargetText(currentLesson.text);
+            if (currentLesson) {
+              setTargetText(getLessonTargetText(currentLesson, language));
             }
             setCurrentView('typing');
           }}
@@ -820,9 +730,6 @@ export default function App() {
           onBackspace={handleBackspace}
           language={language}
           currentLesson={currentLesson}
-          avroWordIndex={avroWordIndex}
-          avroWordInput={avroWordInput}
-          avroWordResults={avroWordResults}
         />
 
         {/* Virtual Keyboard */}

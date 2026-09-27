@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Sparkles, Flame, Zap, Target, Image as ImageIcon, ImageOff, ArrowRight, RotateCcw, Smartphone } from 'lucide-react';
-import { transliterateAvro, checkAvroWordMatch } from '../utils/avroPhonetic';
 
 export default function TypingArea({
   targetText,
@@ -26,29 +25,53 @@ export default function TypingArea({
   onTypeChar,
   onBackspace,
   language = 'en',
-  currentLesson = null,
-  avroWordIndex = 0,
-  avroWordInput = '',
-  avroWordResults = []
+  currentLesson = null
 }) {
   const currentIdx = userInput.length;
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
   const textContainerRef = useRef(null);
 
-  // For Bangla Avro mode: target words with their phonetic hints
-  const avroTargetWords = useMemo(() => {
-    if (currentLesson?.words && currentLesson.words.length > 0) {
-      return currentLesson.words;
-    }
-    return targetText.split(' ').filter(Boolean).map((w) => ({ bangla: w, avro: '' }));
-  }, [currentLesson, targetText]);
-
   const progressPercent = useMemo(() => {
-    if (language === 'bn') {
-      return Math.min(100, Math.round((avroWordIndex / Math.max(1, avroTargetWords.length)) * 100));
-    }
     return Math.min(100, Math.round((currentIdx / Math.max(1, targetText.length)) * 100));
-  }, [language, avroWordIndex, avroTargetWords.length, currentIdx, targetText.length]);
+  }, [currentIdx, targetText.length]);
+
+  // For Bangla Avro phonetic mode: create word blocks with Bangla word and letter-by-letter phonetic characters
+  const banglaWordBlocks = useMemo(() => {
+    if (language !== 'bn') return [];
+
+    const sourceWords = (currentLesson?.words && currentLesson.words.length > 0)
+      ? currentLesson.words
+      : targetText.split(' ').map((w) => ({ bangla: w, avro: w }));
+
+    let charCursor = 0;
+    return sourceWords.map((w, wIdx) => {
+      const phonetic = w.avro || '';
+      const letters = [];
+      for (let i = 0; i < phonetic.length; i++) {
+        letters.push({
+          char: phonetic[i],
+          index: charCursor++
+        });
+      }
+
+      let hasTrailingSpace = false;
+      let spaceIndex = null;
+      if (charCursor < targetText.length && targetText[charCursor] === ' ') {
+        hasTrailingSpace = true;
+        spaceIndex = charCursor;
+        charCursor++;
+      }
+
+      return {
+        wordIndex: wIdx,
+        bangla: w.bangla || '',
+        phonetic,
+        letters,
+        hasTrailingSpace,
+        spaceIndex
+      };
+    });
+  }, [language, currentLesson, targetText]);
 
   // Group characters into whole words so words NEVER split across lines
   const words = useMemo(() => {
@@ -389,77 +412,121 @@ export default function TypingArea({
       {/* ─── Main Text Display ─── */}
       <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-3.5 sm:px-10 py-4 sm:py-8 transition-opacity duration-300 ${!hasStarted ? 'opacity-70' : 'opacity-100'}`}>
         {language === 'bn' ? (
-          <div className="font-['Hind_Siliguri',_'Inria_Sans',_sans-serif] text-2xl sm:text-3xl md:text-[36px] leading-[2.6] sm:leading-[3] tracking-wide w-full select-none flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-3">
-            {avroTargetWords.map((item, wIdx) => {
-              const isCurrent = wIdx === avroWordIndex;
-              const isTyped = wIdx < avroWordIndex;
-              const isCorrect = avroWordResults[wIdx]?.isCorrect !== false;
-              const targetBangla = item.bangla || item;
-              const phoneticHint = item.avro || '';
+          <div className="w-full flex flex-wrap items-end gap-x-4 sm:gap-x-6 gap-y-4 sm:gap-y-6 select-none font-['Inria_Sans',_sans-serif]">
+            {banglaWordBlocks.map((block) => {
+              const { wordIndex, bangla, letters, hasTrailingSpace, spaceIndex } = block;
 
-              if (isTyped) {
-                return (
-                  <span
-                    key={wIdx}
-                    className={`inline-flex flex-col items-center px-2.5 py-1 rounded-xl transition-all duration-100 ${
-                      isCorrect
-                        ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30'
-                        : 'bg-rose-500/20 text-rose-800 dark:text-rose-200 border border-rose-500/30'
-                    }`}
-                  >
-                    <span className="text-[10px] font-mono opacity-60 font-semibold">{phoneticHint}</span>
-                    <span className="font-bold">{targetBangla}</span>
-                  </span>
-                );
-              }
+              // Check if all letters of this word are typed and correct
+              const isWordCompleted = letters.length > 0 && letters.every((l) => {
+                if (l.index >= currentIdx) return false;
+                const typedChar = userInput[l.index];
+                return typedChar === l.char || (typedChar && typedChar.toLowerCase() === l.char.toLowerCase());
+              });
 
-              if (isCurrent) {
-                const liveConverted = transliterateAvro(avroWordInput);
-                const isMatch = checkAvroWordMatch(avroWordInput, targetBangla, phoneticHint);
+              const isWordActive = letters.length > 0 && currentIdx >= letters[0].index && currentIdx <= (spaceIndex ?? letters[letters.length - 1].index);
 
-                return (
-                  <span
-                    key={wIdx}
-                    data-active="true"
-                    className="relative inline-flex flex-col items-center px-3 py-1 rounded-xl transition-all bg-[#FDE047] dark:bg-amber-400 text-slate-950 font-bold shadow-md"
-                  >
-                    {/* Phonetic guide pill above current word */}
-                    <span className="text-[11px] font-mono font-black text-slate-900/80 -mt-0.5 tracking-wider">
-                      {phoneticHint}
-                    </span>
-
-                    {/* Target Bangla word with active underline */}
-                    <span className="relative text-inherit font-extrabold text-2xl sm:text-3xl md:text-[36px]">
-                      {targetBangla}
-                      <span className="absolute -bottom-[3px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#1D4ED8] rounded-full shadow-sm" />
-                    </span>
-
-                    {/* Live Avro input preview pill below word */}
-                    <span className={`absolute -bottom-7 sm:-bottom-8 px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-mono font-bold whitespace-nowrap shadow-lg border z-30 transition-all ${
-                      isMatch
-                        ? 'bg-emerald-600 text-white border-emerald-400 animate-pulse'
-                        : 'bg-slate-900 text-amber-300 border-amber-500/40'
-                    }`}>
-                      {avroWordInput ? (
-                        <span>
-                          {avroWordInput} ➔ {liveConverted} {isMatch ? '✓ (Space)' : ''}
-                        </span>
-                      ) : (
-                        <span className="opacity-80">type: {phoneticHint}</span>
-                      )}
-                    </span>
-                  </span>
-                );
-              }
-
-              // Upcoming words
               return (
                 <span
-                  key={wIdx}
-                  className="inline-flex flex-col items-center px-1.5 py-0.5 rounded-lg text-[#2C2720]/80 dark:text-slate-300/80 transition-colors"
+                  key={wordIndex}
+                  className={`inline-flex items-end whitespace-nowrap transition-all duration-200 ${
+                    isWordActive ? 'scale-[1.02]' : ''
+                  }`}
                 >
-                  <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">{phoneticHint}</span>
-                  <span>{targetBangla}</span>
+                  {/* Word card: Bangla script on top, phonetic letters below */}
+                  <span
+                    className={`inline-flex flex-col items-center px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border transition-all duration-200 ${
+                      isWordCompleted
+                        ? 'bg-emerald-500/10 dark:bg-emerald-950/25 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 shadow-xs'
+                        : isWordActive
+                        ? 'bg-amber-500/10 dark:bg-amber-400/10 border-amber-400/50 shadow-sm'
+                        : 'bg-black/[0.02] dark:bg-white/[0.02] border-transparent'
+                    }`}
+                  >
+                    {/* Top: Bangla Word */}
+                    <span
+                      className={`font-['Hind_Siliguri',_sans-serif] text-2xl sm:text-3xl md:text-[34px] leading-tight font-extrabold transition-colors duration-200 ${
+                        isWordCompleted
+                          ? 'text-emerald-700 dark:text-emerald-400'
+                          : isWordActive
+                          ? 'text-slate-900 dark:text-white drop-shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 opacity-75'
+                      }`}
+                    >
+                      {bangla}
+                      {isWordCompleted && (
+                        <span className="ml-1 text-xs text-emerald-600 dark:text-emerald-400">✓</span>
+                      )}
+                    </span>
+
+                    {/* Bottom: Individual Phonetic Letters */}
+                    <span className="flex items-center gap-0.5 mt-1 sm:mt-1.5 font-mono text-base sm:text-lg md:text-xl font-bold tracking-wider">
+                      {letters.map(({ char, index }) => {
+                        const isCurrent = index === currentIdx;
+                        const isTyped = index < currentIdx;
+
+                        if (isTyped) {
+                          const typedChar = userInput[index];
+                          const isCorrect = typedChar === char || (typedChar && typedChar.toLowerCase() === char.toLowerCase());
+
+                          return (
+                            <span
+                              key={index}
+                              className={`relative inline-block transition-colors duration-75 ${
+                                isCorrect
+                                  ? 'text-[#15803D] dark:text-[#86EFAC]'
+                                  : 'text-[#DC2626] dark:text-red-400 bg-[#DC2626]/20 underline decoration-[#DC2626] px-0.5 rounded'
+                              }`}
+                            >
+                              {char}
+                            </span>
+                          );
+                        }
+
+                        if (isCurrent) {
+                          return (
+                            <span
+                              key={index}
+                              data-active="true"
+                              className="relative inline-block bg-[#FDE047] dark:bg-amber-400 text-slate-950 font-black px-1 rounded-sm shadow-xs transition-none"
+                            >
+                              {char}
+                              {/* Active Cursor Underline */}
+                              <span className="absolute -bottom-[3px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#1D4ED8] rounded-full shadow-sm animate-pulse" />
+                            </span>
+                          );
+                        }
+
+                        // Upcoming letter
+                        return (
+                          <span
+                            key={index}
+                            className="inline-block text-slate-500 dark:text-slate-400 opacity-60 font-semibold"
+                          >
+                            {char}
+                          </span>
+                        );
+                      })}
+                    </span>
+                  </span>
+
+                  {/* Space separator between words */}
+                  {hasTrailingSpace && (
+                    <span className="inline-block self-end mb-2 sm:mb-2.5 mx-1 sm:mx-1.5">
+                      {spaceIndex === currentIdx ? (
+                        <span
+                          data-active="true"
+                          className="relative inline-flex items-center justify-center px-1.5 py-0.5 rounded bg-[#FDE047] dark:bg-amber-400 text-slate-950 text-xs font-mono font-black shadow-xs"
+                        >
+                          ␣
+                          <span className="absolute -bottom-[3px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#1D4ED8] rounded-full shadow-sm animate-pulse" />
+                        </span>
+                      ) : spaceIndex < currentIdx ? (
+                        <span className="text-emerald-500/40 text-xs font-mono select-none opacity-40">·</span>
+                      ) : (
+                        <span className="text-slate-400/40 text-xs font-mono select-none opacity-30">·</span>
+                      )}
+                    </span>
+                  )}
                 </span>
               );
             })}
