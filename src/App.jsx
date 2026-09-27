@@ -568,7 +568,7 @@ export default function App() {
   // Otherwise, render the Typing Arena View
   return (
     <div
-      className="min-h-screen flex flex-col font-['Roboto'] select-none relative overflow-hidden"
+      className="min-h-screen flex flex-col font-['Inria_Sans',_'Roboto',_sans-serif] font-normal select-none relative overflow-hidden"
       style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
     >
       {/* Background ambient effects */}

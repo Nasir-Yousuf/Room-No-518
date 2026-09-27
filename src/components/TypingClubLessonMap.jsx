@@ -236,7 +236,7 @@ export default function TypingClubLessonMap({
   };
 
   return (
-    <div className="min-h-screen font-['Roboto'] flex flex-col select-none relative overflow-x-hidden" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <div className="min-h-screen font-['Inria_Sans',_'Roboto',_sans-serif] font-normal flex flex-col select-none relative overflow-x-hidden" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <BackgroundParticles />
 
       {/* ─── Premium Header ─── */}
