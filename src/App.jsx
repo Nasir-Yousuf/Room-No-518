@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ALL_500_LESSONS, BEAUTY_TIERS } from './data/lessons';
+import { ALL_685_LESSONS, ALL_500_LESSONS, BEAUTY_TIERS } from './data/lessons';
 import TypingClubHeader from './components/TypingClubHeader';
 import TypingArea from './components/TypingArea';
 import VirtualKeyboard from './components/VirtualKeyboard';
@@ -19,8 +19,36 @@ export default function App() {
   // Navigation View: 'lessons' (Typing Club 500 curriculum page by default) | 'typing' (main typing arena)
   const [currentView, setCurrentView] = useState('lessons');
 
-  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
-  const [currentLesson, setCurrentLesson] = useState(ALL_500_LESSONS[0]);
+  // Initialize current lesson with persistence in localStorage
+  const [currentLesson, setCurrentLesson] = useState(() => {
+    try {
+      const savedNum = localStorage.getItem('glowtype_current_lesson');
+      if (savedNum) {
+        const num = parseInt(savedNum, 10);
+        const found = ALL_685_LESSONS.find((l) => l.number === num);
+        if (found) return found;
+      }
+    } catch {}
+    return ALL_685_LESSONS[0];
+  });
+
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(() => {
+    try {
+      const savedNum = localStorage.getItem('glowtype_current_lesson');
+      if (savedNum) {
+        const num = parseInt(savedNum, 10);
+        const idx = ALL_685_LESSONS.findIndex((l) => l.number === num);
+        if (idx !== -1) return idx;
+      }
+    } catch {}
+    return 0;
+  });
+
+  const currentLessonRef = useRef(currentLesson);
+  useEffect(() => {
+    currentLessonRef.current = currentLesson;
+  }, [currentLesson]);
+
   const [gameMode] = useState('lesson');
 
   // Completed lesson stars map { [lessonNumber]: stars }
@@ -149,8 +177,9 @@ export default function App() {
     return 15;
   }, []);
 
-  const resetGame = useCallback((lessonToUse = currentLesson, mode = gameMode) => {
-    let text = lessonToUse.text;
+  const resetGame = useCallback((lessonToUse = null, mode = gameMode) => {
+    const lesson = lessonToUse || currentLessonRef.current || currentLesson;
+    let text = lesson.text;
     if (mode === 'blitz30' || mode === 'blitz60') {
       text = "Freedom of speech is the belief that people have the right to express their opinions and ideas without fear that they will be in legal trouble. However, practice makes typing effortless.";
     }
@@ -191,19 +220,30 @@ export default function App() {
   }, []);
 
   const handleSelectLesson = (lesson) => {
-    setCurrentLesson(lesson);
-    const idx = ALL_500_LESSONS.findIndex((l) => l.number === lesson.number);
-    if (idx !== -1) setCurrentLessonIndex(idx);
-    resetGame(lesson, gameMode);
+    if (!lesson) return;
+    const fullLesson = ALL_685_LESSONS.find((l) => l.number === lesson.number) || lesson;
+    setCurrentLesson(fullLesson);
+    currentLessonRef.current = fullLesson;
+    const idx = ALL_685_LESSONS.findIndex((l) => l.number === fullLesson.number);
+    setCurrentLessonIndex(idx !== -1 ? idx : 0);
+    resetGame(fullLesson, gameMode);
     setCurrentView('typing');
+    try {
+      localStorage.setItem('glowtype_current_lesson', String(fullLesson.number));
+    } catch {}
   };
 
   const handleNextLesson = () => {
-    const nextIdx = (currentLessonIndex + 1) % ALL_500_LESSONS.length;
-    setCurrentLessonIndex(nextIdx);
-    const nextLesson = ALL_500_LESSONS[nextIdx];
+    const currentNum = currentLessonRef.current?.number || currentLesson?.number || 1;
+    const nextLesson = ALL_685_LESSONS.find((l) => l.number === currentNum + 1) || ALL_685_LESSONS[0];
+    const nextIdx = ALL_685_LESSONS.findIndex((l) => l.number === nextLesson.number);
     setCurrentLesson(nextLesson);
+    currentLessonRef.current = nextLesson;
+    setCurrentLessonIndex(nextIdx !== -1 ? nextIdx : 0);
     resetGame(nextLesson, gameMode);
+    try {
+      localStorage.setItem('glowtype_current_lesson', String(nextLesson.number));
+    } catch {}
   };
 
   const toggleSound = () => {
@@ -273,9 +313,10 @@ export default function App() {
     if (accuracy >= 94 && wpm >= 7) stars = 4;
     if (accuracy >= 98 && wpm >= 9) stars = 5;
 
+    const lessonNum = currentLessonRef.current?.number || currentLesson?.number || 1;
     setCompletedStars((prev) => {
-      const currentBest = prev[currentLesson.number] || 0;
-      const updated = { ...prev, [currentLesson.number]: Math.max(currentBest, stars) };
+      const currentBest = prev[lessonNum] || 0;
+      const updated = { ...prev, [lessonNum]: Math.max(currentBest, stars) };
       try {
         localStorage.setItem('glowtype_lesson_stars', JSON.stringify(updated));
       } catch {}
@@ -293,6 +334,9 @@ export default function App() {
 
     const handleKeyDown = (e) => {
       if (showAvatarModal) return;
+
+      // Ignore browser shortcuts (e.g. Ctrl+R, Alt+Left, F5, etc.) so typing doesn't swallow or misfire
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       setActiveKey(e.key === ' ' ? 'Space' : e.key);
 
@@ -488,9 +532,13 @@ export default function App() {
         onNextLesson={handleNextLesson}
         hasNextLesson={currentLesson.number < 685}
         currentLesson={currentLesson}
-        onClose={() => setShowResults(false)}
+        onClose={() => {
+          setShowResults(false);
+          setIsFinished(false);
+        }}
         onBackToLessons={() => {
           setShowResults(false);
+          setIsFinished(false);
           setCurrentView('lessons');
         }}
         currentTier={currentTier}

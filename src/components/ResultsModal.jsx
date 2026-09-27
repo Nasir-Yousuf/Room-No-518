@@ -173,6 +173,8 @@ export default function ResultsModal({
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
       if (e.key === 'Enter') {
         e.preventDefault();
         if (hasNextLesson && onNextLesson) {

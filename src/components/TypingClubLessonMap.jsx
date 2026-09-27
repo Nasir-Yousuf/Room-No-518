@@ -193,6 +193,12 @@ export default function TypingClubLessonMap({
     if (searchQuery.trim() !== '') {
       const q = searchQuery.trim().toLowerCase();
       const qNum = parseInt(q, 10);
+      if (!isNaN(qNum) && qNum.toString() === q) {
+        // User typed a specific lesson number e.g. "93"
+        // Return exact lesson number match as primary result
+        const exact = ALL_685_LESSONS.filter((l) => l.number === qNum);
+        if (exact.length > 0) return exact;
+      }
       return ALL_685_LESSONS.filter(
         (l) => l.number === qNum || l.title.toLowerCase().includes(q) || l.text.toLowerCase().includes(q)
       );
@@ -267,9 +273,16 @@ export default function TypingClubLessonMap({
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search lessons..."
+              placeholder="Search lessons (e.g. 93)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && filteredLessons.length > 0) {
+                  e.preventDefault();
+                  onSelectLesson(filteredLessons[0]);
+                  onBackToTyping();
+                }
+              }}
               className="w-full pl-9 pr-3 py-2.5 glass-light rounded-xl text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
               style={{ color: 'var(--text-primary)' }}
             />
@@ -280,7 +293,12 @@ export default function TypingClubLessonMap({
 
           {/* Start Typing CTA */}
           <button
-            onClick={onBackToTyping}
+            onClick={() => {
+              if (searchQuery.trim() !== '' && filteredLessons.length > 0) {
+                onSelectLesson(filteredLessons[0]);
+              }
+              onBackToTyping();
+            }}
             className="flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-300 active:scale-95 cursor-pointer"
           >
             <span>Start Typing</span>
