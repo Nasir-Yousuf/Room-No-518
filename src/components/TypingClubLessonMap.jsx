@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown } from 'lucide-react';
+import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown, Image as ImageIcon, ImageOff } from 'lucide-react';
 import { LESSON_STAGES, ALL_685_LESSONS } from '../data/lessons';
 import ThemeToggle from './ThemeToggle';
 
@@ -178,7 +178,9 @@ export default function TypingClubLessonMap({
   onBackToTyping,
   completedStars = {},
   isDark,
-  onToggleTheme
+  onToggleTheme,
+  showTierPhotos = true,
+  onToggleTierPhotos
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedStages, setCollapsedStages] = useState({});
@@ -287,6 +289,36 @@ export default function TypingClubLessonMap({
               style={{ color: 'var(--text-primary)' }}
             />
           </div>
+
+          {/* Tier Photos Toggle Button */}
+          {onToggleTierPhotos && (
+            <button
+              onClick={onToggleTierPhotos}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-xs hover:shadow-md active:scale-95 border ${
+                showTierPhotos
+                  ? 'bg-gradient-to-r from-purple-500/15 to-indigo-500/15 border-purple-500/35 text-purple-600 dark:text-purple-300 hover:bg-purple-500/25'
+                  : 'glass-light border-slate-300/60 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+              title={
+                showTierPhotos
+                  ? 'Tier Photos are ON. Click to turn off tier photos everywhere.'
+                  : 'Tier Photos are OFF. Click to turn on tier photos.'
+              }
+              aria-label="Toggle Tier Photos"
+            >
+              {showTierPhotos ? (
+                <>
+                  <ImageIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <span className="hidden sm:inline">Photos: <span className="text-emerald-600 dark:text-emerald-400 font-black">ON</span></span>
+                </>
+              ) : (
+                <>
+                  <ImageOff className="w-4 h-4 text-slate-400" />
+                  <span className="hidden sm:inline">Photos: <span className="text-rose-500 dark:text-rose-400 font-black">OFF</span></span>
+                </>
+              )}
+            </button>
+          )}
 
           {/* Day/Night Toggle */}
           <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />

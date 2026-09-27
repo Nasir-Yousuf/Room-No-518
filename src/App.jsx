@@ -94,6 +94,25 @@ export default function App() {
     setIsDark((prev) => !prev);
   }, []);
 
+  // Tier photos visibility state (persisted in localStorage)
+  const [showTierPhotos, setShowTierPhotos] = useState(() => {
+    try {
+      const saved = localStorage.getItem('glowtype_show_tier_photos');
+      if (saved !== null) return saved === 'true';
+    } catch {}
+    return true; // Default is ON
+  });
+
+  const toggleTierPhotos = useCallback(() => {
+    setShowTierPhotos((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('glowtype_show_tier_photos', String(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
   // Typing States
   const [targetText, setTargetText] = useState(ALL_500_LESSONS[0].text);
   const [userInput, setUserInput] = useState('');
@@ -442,6 +461,8 @@ export default function App() {
         completedStars={completedStars}
         isDark={isDark}
         onToggleTheme={toggleTheme}
+        showTierPhotos={showTierPhotos}
+        onToggleTierPhotos={toggleTierPhotos}
       />
     );
   }
@@ -484,6 +505,8 @@ export default function App() {
         isDark={isDark}
         onToggleTheme={toggleTheme}
         customAvatars={customAvatars}
+        showTierPhotos={showTierPhotos}
+        onToggleTierPhotos={toggleTierPhotos}
       />
 
       {/* Main Typing Arena */}
@@ -503,6 +526,7 @@ export default function App() {
           lastErrorTrigger={lastErrorTrigger}
           glamourScore={glamourScore}
           isDark={isDark}
+          showTierPhotos={showTierPhotos}
           onOpenCustomPhotos={() => setShowAvatarModal(true)}
           onRestart={() => resetGame()}
           onNextLesson={handleNextLesson}
@@ -543,6 +567,7 @@ export default function App() {
         }}
         currentTier={currentTier}
         customAvatars={customAvatars}
+        showTierPhotos={showTierPhotos}
       />
 
       <CustomAvatarModal

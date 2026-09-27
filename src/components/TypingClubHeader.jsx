@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, Zap, Target, Flame, ArrowLeft } from 'lucide-react';
+import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, Zap, Target, Flame, ArrowLeft, Sparkles } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 export default function TypingClubHeader({
@@ -20,7 +20,9 @@ export default function TypingClubHeader({
   glamourScore,
   isDark,
   onToggleTheme,
-  customAvatars = {}
+  customAvatars = {},
+  showTierPhotos = true,
+  onToggleTierPhotos
 }) {
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
 
@@ -74,24 +76,28 @@ export default function TypingClubHeader({
             <span className={`font-mono font-black text-sm ${accuracy >= 90 ? 'text-emerald-500 dark:text-emerald-300' : 'text-amber-500 dark:text-amber-300'}`}>{accuracy}%</span>
           </div>
 
-          {/* Tier Badge with Photo Thumbnail */}
+          {/* Tier Badge */}
           <button
-            onClick={onOpenCustomPhotos}
-            className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 shadow-sm hover:scale-105 cursor-pointer group"
+            onClick={showTierPhotos ? onOpenCustomPhotos : undefined}
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 shadow-sm hover:scale-105 cursor-pointer group"
             style={{
               background: `${currentTier.themeColor}18`,
               color: currentTier.themeColor,
               border: `1px solid ${currentTier.themeColor}35`,
               boxShadow: `0 0 15px ${currentTier.themeColor}15`
             }}
-            title={`Tier ${currentTier.tier}: ${currentTier.name} (${currentTier.targetSpeed}) - Click to customize`}
+            title={showTierPhotos ? `Tier ${currentTier.tier}: ${currentTier.name} (${currentTier.targetSpeed}) - Click to customize` : `Tier ${currentTier.tier}: ${currentTier.name} (${currentTier.targetSpeed})`}
           >
-            <img
-              src={activeAvatar}
-              alt={currentTier.name}
-              className="w-5 h-5 rounded-full object-cover border"
-              style={{ borderColor: currentTier.themeColor }}
-            />
+            {showTierPhotos ? (
+              <img
+                src={activeAvatar}
+                alt={currentTier.name}
+                className="w-5 h-5 rounded-full object-cover border"
+                style={{ borderColor: currentTier.themeColor }}
+              />
+            ) : (
+              <Sparkles className="w-4 h-4" style={{ color: currentTier.themeColor }} />
+            )}
             <span className="font-mono">T{currentTier.tier}</span>
           </button>
         </div>
@@ -142,13 +148,15 @@ export default function TypingClubHeader({
           </button>
 
           {/* Custom Photos */}
-          <button
-            onClick={onOpenCustomPhotos}
-            className="hidden sm:block p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-purple-400 transition-all duration-200 cursor-pointer"
-            title="Customize Tier Photos"
-          >
-            <ImageIcon className="w-4 h-4" />
-          </button>
+          {showTierPhotos && (
+            <button
+              onClick={onOpenCustomPhotos}
+              className="hidden sm:block p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-purple-400 transition-all duration-200 cursor-pointer"
+              title="Customize Tier Photos"
+            >
+              <ImageIcon className="w-4 h-4" />
+            </button>
+          )}
 
           {/* Day/Night Toggle */}
           <div className="w-px h-5 bg-white/10" />

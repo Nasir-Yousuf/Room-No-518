@@ -15,6 +15,7 @@ export default function TypingArea({
   lastErrorTrigger,
   glamourScore,
   isDark = false,
+  showTierPhotos = true,
   onOpenCustomPhotos,
   onRestart,
   onNextLesson,
@@ -83,7 +84,7 @@ export default function TypingArea({
       />
 
       {/* Zoomed Full-Space Background Tier Photo with Rich Ambient Color Wash (Like Before) */}
-      {showBgPhoto && (
+      {showTierPhotos && showBgPhoto && (
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           {/* Base background color */}
           <div

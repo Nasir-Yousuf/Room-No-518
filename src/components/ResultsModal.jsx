@@ -119,7 +119,8 @@ export default function ResultsModal({
   onClose,
   onBackToLessons,
   currentTier,
-  customAvatars = {}
+  customAvatars = {},
+  showTierPhotos = true
 }) {
   if (!isOpen) return null;
 
@@ -279,22 +280,36 @@ export default function ResultsModal({
           }}
         >
           <div className="flex items-center gap-3">
-            <div
-              className="relative w-13 h-13 sm:w-15 sm:h-15 rounded-2xl overflow-hidden border-2 flex-shrink-0 shadow-lg"
-              style={{ borderColor: tierObj.themeColor }}
-            >
-              <img
-                src={activeAvatar}
-                alt={tierObj.name}
-                className="w-full h-full object-cover"
-              />
-              <span
-                className="absolute bottom-0 inset-x-0 text-center text-[10px] font-black text-white py-0.5"
-                style={{ backgroundColor: tierObj.themeColor }}
+            {showTierPhotos ? (
+              <div
+                className="relative w-13 h-13 sm:w-15 sm:h-15 rounded-2xl overflow-hidden border-2 flex-shrink-0 shadow-lg"
+                style={{ borderColor: tierObj.themeColor }}
               >
-                Tier {tierObj.tier}
-              </span>
-            </div>
+                <img
+                  src={activeAvatar}
+                  alt={tierObj.name}
+                  className="w-full h-full object-cover"
+                />
+                <span
+                  className="absolute bottom-0 inset-x-0 text-center text-[10px] font-black text-white py-0.5"
+                  style={{ backgroundColor: tierObj.themeColor }}
+                >
+                  Tier {tierObj.tier}
+                </span>
+              </div>
+            ) : (
+              <div
+                className="w-13 h-13 sm:w-15 sm:h-15 rounded-2xl border-2 flex-shrink-0 shadow-lg flex flex-col items-center justify-center font-mono font-black"
+                style={{
+                  borderColor: tierObj.themeColor,
+                  background: `${tierObj.themeColor}20`,
+                  color: tierObj.themeColor
+                }}
+              >
+                <Sparkles className="w-5 h-5 mb-0.5" />
+                <span className="text-[10px] uppercase tracking-wider leading-none">T{tierObj.tier}</span>
+              </div>
+            )}
             <div className="text-left">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="text-xs font-black px-2 py-0.5 rounded-md" style={{ background: `${tierObj.themeColor}25`, color: tierObj.themeColor }}>
