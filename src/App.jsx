@@ -458,11 +458,11 @@ export default function App() {
     }
   }, [userInput, totalErrors, hasStarted]);
 
-  const finishGame = () => {
+  const finishGame = (finalTypedLength) => {
     setIsFinished(true);
     setShowResults(true);
 
-    const totalTyped = userInput.length;
+    const totalTyped = finalTypedLength ?? userInput.length;
     let finalAcc = accuracy;
     if (totalTyped > 0) {
       finalAcc = Math.max(0, Math.round(((totalTyped - totalErrors) / totalTyped) * 100));
@@ -538,7 +538,7 @@ export default function App() {
       setUserInput(nextInput);
 
       if (nextInput.length >= targetText.length) {
-        finishGame();
+        finishGame(nextInput.length);
       }
     } else {
       playErrorSound();
@@ -554,9 +554,9 @@ export default function App() {
 
       if (gameMode === 'survival' && totalErrors + 1 >= 3) {
         setGlamourScore(10);
-        finishGame();
+        finishGame(nextInput.length);
       } else if (nextInput.length >= targetText.length) {
-        finishGame();
+        finishGame(nextInput.length);
       }
     }
   }, [
@@ -586,7 +586,7 @@ export default function App() {
     if (currentView !== 'typing') return;
 
     const handleKeyDown = (e) => {
-      if (showAvatarModal) return;
+      if (showAvatarModal || showResults || isFinished) return;
 
       // When focused on an input (such as the mobile hidden input), let its event handler handle typing
       if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
@@ -620,7 +620,7 @@ export default function App() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [currentView, showAvatarModal, handleCharTyped, handleBackspace]);
+  }, [currentView, showAvatarModal, showResults, isFinished, handleCharTyped, handleBackspace]);
 
   const currentTargetChar = useMemo(() => {
     return targetText[userInput.length] || '';
@@ -753,7 +753,7 @@ export default function App() {
         elapsedTime={elapsedTime}
         onRestart={() => resetGame()}
         onNextLesson={handleNextLesson}
-        hasNextLesson={currentLesson.number < 685}
+        hasNextLesson={currentLesson.number < activeLessons.length}
         currentLesson={currentLesson}
         onClose={() => {
           setShowResults(false);

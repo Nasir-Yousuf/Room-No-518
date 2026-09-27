@@ -123,7 +123,8 @@ export default function ResultsModal({
   showTierPhotos = true,
   onShareLesson
 }) {
-  if (!isOpen) return null;
+  // Global Keyboard Shortcuts for Results View with cooldown to prevent trailing keystroke restarts
+  const [canHandleKeys, setCanHandleKeys] = useState(false);
 
   // Star calculation
   let stars = 1;
@@ -132,10 +133,59 @@ export default function ResultsModal({
   if (accuracy >= 94 && wpm >= 7) stars = 4;
   if (accuracy >= 98 && wpm >= 9) stars = 5;
 
+  useEffect(() => {
+    if (isOpen && stars >= 4) {
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.4 } });
+      if (stars >= 5) {
+        setTimeout(() => {
+          confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.5 } });
+          confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.5 } });
+        }, 300);
+      }
+    }
+  }, [isOpen, stars]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCanHandleKeys(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setCanHandleKeys(true);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (!canHandleKeys) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (hasNextLesson && onNextLesson) {
+          onNextLesson();
+        } else if (onRestart) {
+          onRestart();
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        if (onBackToLessons) onBackToLessons();
+        else if (onClose) onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, canHandleKeys, hasNextLesson, onNextLesson, onRestart, onBackToLessons, onClose]);
+
+  if (!isOpen) return null;
+
   // Speed Tier achieved based on wpm or active currentTier
   const tierObj = currentTier || BEAUTY_TIERS.find(t => wpm >= t.minWpm && wpm <= t.maxWpm) || BEAUTY_TIERS[Math.min(stars - 1, 4)];
   const activeAvatar = customAvatars[tierObj.tier] || tierObj.avatar;
-
 
   const targetWpm = currentLesson.targetWpm || 21;
 
@@ -157,60 +207,6 @@ export default function ResultsModal({
   };
 
   const perf = getPerformanceLabel();
-
-  useEffect(() => {
-    if (stars >= 4) {
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.4 } });
-      if (stars >= 5) {
-        setTimeout(() => {
-          confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.5 } });
-          confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.5 } });
-        }, 300);
-      }
-    }
-  }, [stars]);
-
-  // Global Keyboard Shortcuts for Results View with cooldown to prevent trailing keystroke restarts
-  const [canHandleKeys, setCanHandleKeys] = useState(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setCanHandleKeys(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      setCanHandleKeys(true);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e) => {
-      if (!canHandleKeys) return;
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (hasNextLesson && onNextLesson) {
-          onNextLesson();
-        } else if (onRestart) {
-          onRestart();
-        }
-      } else if (e.key === 'r' || e.key === 'R') {
-        e.preventDefault();
-        if (onRestart) onRestart();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        if (onBackToLessons) onBackToLessons();
-        else if (onClose) onClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, canHandleKeys, hasNextLesson, onNextLesson, onRestart, onBackToLessons, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col text-white select-none animate-fadeIn overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
