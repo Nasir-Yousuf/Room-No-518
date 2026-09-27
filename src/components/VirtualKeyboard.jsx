@@ -134,8 +134,9 @@ export default function VirtualKeyboard({
       )}
 
       {/* Keyboard Layout */}
-      <div className="relative flex flex-col gap-1 sm:gap-1.5 items-center w-full max-w-3xl mx-auto">
-        {KEYBOARD_ROWS.map((row, rowIdx) => (
+      <div className="w-full overflow-x-auto pb-1 flex justify-center no-scrollbar">
+        <div className="relative flex flex-col gap-1 sm:gap-1.5 items-center min-w-[500px] sm:min-w-0 max-w-3xl mx-auto">
+          {KEYBOARD_ROWS.map((row, rowIdx) => (
           <div key={rowIdx} className="flex gap-0.5 sm:gap-1 justify-center">
             {row.map((k, keyIdx) => {
               const isTarget = isTargetKey(k);
@@ -197,6 +198,7 @@ export default function VirtualKeyboard({
             })}
           </div>
         ))}
+        </div>
       </div>
 
       {/* Hand SVG Overlays */}

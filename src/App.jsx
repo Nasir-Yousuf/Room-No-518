@@ -437,24 +437,95 @@ export default function App() {
   };
 
   // Direct Window Keyboard Listener (Active when in typing view)
+  // Central character typed handler (supports both physical and mobile keyboards)
+  const handleCharTyped = useCallback((charTyped) => {
+    if (isFinished || isPaused) return;
+
+    setActiveKey(charTyped === ' ' ? 'Space' : charTyped);
+    setTimeout(() => setActiveKey(''), 150);
+
+    const now = Date.now();
+
+    if (!hasStarted) {
+      setHasStarted(true);
+      setStartTime(now);
+    }
+
+    const expectedChar = targetText[userInput.length];
+    const isCorrect = charTyped === expectedChar;
+
+    if (isCorrect) {
+      playKeyClick(charTyped === ' ');
+      const newCombo = combo + 1;
+      setCombo(newCombo);
+      if (newCombo > peakCombo) setPeakCombo(newCombo);
+
+      if (newCombo % 10 === 0) {
+        playStreakChime(newCombo);
+      }
+
+      recentKeystrokes.current.push(now);
+      recentKeystrokes.current = recentKeystrokes.current.filter((t) => now - t <= 5000);
+      const rollingChars = recentKeystrokes.current.length;
+      const liveSpeed = Math.round(rollingChars * 2.4);
+
+      setWpm(liveSpeed);
+
+      const newGlamour = calculateGlamourFromSpeed(liveSpeed);
+      setGlamourScore(newGlamour);
+
+      const nextInput = userInput + charTyped;
+      setUserInput(nextInput);
+
+      if (nextInput.length >= targetText.length) {
+        finishGame();
+      }
+    } else {
+      playErrorSound();
+      setLastErrorTrigger(now);
+      setCombo(0);
+      setTotalErrors((prev) => prev + 1);
+
+      errorPenaltyUntil.current = now + 1800;
+      setGlamourScore(15);
+
+      const nextInput = userInput + charTyped;
+      setUserInput(nextInput);
+
+      if (gameMode === 'survival' && totalErrors + 1 >= 3) {
+        setGlamourScore(10);
+        finishGame();
+      } else if (nextInput.length >= targetText.length) {
+        finishGame();
+      }
+    }
+  }, [userInput, targetText, combo, peakCombo, totalErrors, isFinished, isPaused, hasStarted, gameMode, calculateGlamourFromSpeed]);
+
+  // Central backspace handler
+  const handleBackspace = useCallback(() => {
+    if (isFinished || isPaused) return;
+    if (userInput.length > 0) {
+      setUserInput((prev) => prev.slice(0, -1));
+    }
+  }, [isFinished, isPaused, userInput]);
+
   useEffect(() => {
     if (currentView !== 'typing') return;
 
     const handleKeyDown = (e) => {
       if (showAvatarModal) return;
 
+      // When focused on an input (such as the mobile hidden input), let its event handler handle typing
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+        return;
+      }
+
       // Ignore browser shortcuts (e.g. Ctrl+R, Alt+Left, F5, etc.) so typing doesn't swallow or misfire
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
-      setActiveKey(e.key === ' ' ? 'Space' : e.key);
-
-      if (isFinished || isPaused) return;
-
       if (e.key === 'Backspace') {
         e.preventDefault();
-        if (userInput.length > 0) {
-          setUserInput((prev) => prev.slice(0, -1));
-        }
+        handleBackspace();
         return;
       }
 
@@ -462,63 +533,7 @@ export default function App() {
         if (e.key === ' ') {
           e.preventDefault();
         }
-
-        const charTyped = e.key;
-        const now = Date.now();
-
-        if (!hasStarted) {
-          setHasStarted(true);
-          setStartTime(now);
-        }
-
-        const expectedChar = targetText[userInput.length];
-        const isCorrect = charTyped === expectedChar;
-
-        if (isCorrect) {
-          playKeyClick(charTyped === ' ');
-          const newCombo = combo + 1;
-          setCombo(newCombo);
-          if (newCombo > peakCombo) setPeakCombo(newCombo);
-
-          if (newCombo % 10 === 0) {
-            playStreakChime(newCombo);
-          }
-
-          recentKeystrokes.current.push(now);
-          recentKeystrokes.current = recentKeystrokes.current.filter((t) => now - t <= 5000);
-          const rollingChars = recentKeystrokes.current.length;
-          const liveSpeed = Math.round(rollingChars * 2.4);
-
-          setWpm(liveSpeed);
-
-          const newGlamour = calculateGlamourFromSpeed(liveSpeed);
-          setGlamourScore(newGlamour);
-
-          const nextInput = userInput + charTyped;
-          setUserInput(nextInput);
-
-          if (nextInput.length >= targetText.length) {
-            finishGame();
-          }
-        } else {
-          playErrorSound();
-          setLastErrorTrigger(now);
-          setCombo(0);
-          setTotalErrors((prev) => prev + 1);
-
-          errorPenaltyUntil.current = now + 1800;
-          setGlamourScore(15);
-
-          const nextInput = userInput + charTyped;
-          setUserInput(nextInput);
-
-          if (gameMode === 'survival' && totalErrors + 1 >= 3) {
-            setGlamourScore(10);
-            finishGame();
-          } else if (nextInput.length >= targetText.length) {
-            finishGame();
-          }
-        }
+        handleCharTyped(e.key);
       }
     };
 
@@ -532,7 +547,7 @@ export default function App() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [currentView, userInput, targetText, combo, peakCombo, totalErrors, isFinished, isPaused, hasStarted, showAvatarModal, gameMode, calculateGlamourFromSpeed]);
+  }, [currentView, showAvatarModal, handleCharTyped, handleBackspace]);
 
   const currentTargetChar = targetText[userInput.length] || '';
 
@@ -632,6 +647,8 @@ export default function App() {
           onNextLesson={handleNextLesson}
           hasNextLesson={currentLesson.number < 685}
           onShowResults={() => setShowResults(true)}
+          onTypeChar={handleCharTyped}
+          onBackspace={handleBackspace}
         />
 
         {/* Virtual Keyboard */}

@@ -28,7 +28,7 @@ export default function TypingClubHeader({
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
 
   return (
-    <header className="w-full glass-strong px-3 sm:px-6 py-2.5 flex items-center justify-between select-none z-20 relative overflow-hidden" style={{ color: 'var(--text-primary)' }}>
+    <header className="w-full glass-strong px-2 sm:px-6 py-1.5 sm:py-2.5 flex items-center justify-between select-none z-20 relative overflow-hidden" style={{ color: 'var(--text-primary)' }}>
       {/* Animated gradient line at top */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-shift opacity-60" />
 
@@ -136,7 +136,7 @@ export default function TypingClubHeader({
             tabIndex={-1}
             onFocus={(e) => e.currentTarget.blur()}
             onClick={onReset}
-            className="p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer group"
+            className="p-1.5 sm:p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer group"
             title="Restart Lesson"
           >
             <RotateCcw className="w-4 h-4 group-hover:rotate-[-180deg] transition-transform duration-500" />
@@ -148,7 +148,7 @@ export default function TypingClubHeader({
             tabIndex={-1}
             onFocus={(e) => e.currentTarget.blur()}
             onClick={onToggleKeyboard}
-            className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+            className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 cursor-pointer ${
               showKeyboard ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/8 text-slate-500 hover:text-white'
             }`}
             title={showKeyboard ? "Hide Keyboard" : "Show Keyboard"}
@@ -156,13 +156,13 @@ export default function TypingClubHeader({
             <Keyboard className="w-4 h-4" />
           </button>
 
-          {/* Toggle Hands */}
+          {/* Toggle Hands (hidden on mobile) */}
           <button
             type="button"
             tabIndex={-1}
             onFocus={(e) => e.currentTarget.blur()}
             onClick={onToggleHands}
-            className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+            className={`hidden sm:block p-1.5 sm:p-2 rounded-xl transition-all duration-200 cursor-pointer ${
               showHands ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/8 text-slate-500 hover:text-white'
             }`}
             title={showHands ? "Hide Hands Guide" : "Show Hands Guide"}
@@ -176,7 +176,7 @@ export default function TypingClubHeader({
             tabIndex={-1}
             onFocus={(e) => e.currentTarget.blur()}
             onClick={onToggleSound}
-            className="p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer"
             title={soundOn ? "Mute Sound" : "Enable Sound"}
           >
             {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
@@ -189,7 +189,7 @@ export default function TypingClubHeader({
               tabIndex={-1}
               onFocus={(e) => e.currentTarget.blur()}
               onClick={onToggleTierPhotos}
-              className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+              className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 cursor-pointer ${
                 showTierPhotos
                   ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
                   : 'hover:bg-white/8 text-slate-500 hover:text-white'
@@ -207,7 +207,7 @@ export default function TypingClubHeader({
               tabIndex={-1}
               onFocus={(e) => e.currentTarget.blur()}
               onClick={onOpenCustomPhotos}
-              className="hidden sm:block p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-purple-400 transition-all duration-200 cursor-pointer"
+              className="hidden sm:block p-1.5 sm:p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-purple-400 transition-all duration-200 cursor-pointer"
               title="Customize Tier Photos"
             >
               <Sparkles className="w-4 h-4" />

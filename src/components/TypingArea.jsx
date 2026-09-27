@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Sparkles, Flame, Zap, Target, Image as ImageIcon, ImageOff, ArrowRight, RotateCcw } from 'lucide-react';
+import { Sparkles, Flame, Zap, Target, Image as ImageIcon, ImageOff, ArrowRight, RotateCcw, Smartphone } from 'lucide-react';
 
 export default function TypingArea({
   targetText,
@@ -21,7 +21,9 @@ export default function TypingArea({
   onRestart,
   onNextLesson,
   hasNextLesson = true,
-  onShowResults
+  onShowResults,
+  onTypeChar,
+  onBackspace
 }) {
   const currentIdx = userInput.length;
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
@@ -48,6 +50,49 @@ export default function TypingArea({
 
   const [shaking, setShaking] = useState(false);
   const [showComboFlash, setShowComboFlash] = useState(false);
+
+  // Mobile keyboard input handling
+  const hiddenInputRef = useRef(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [dummyVal, setDummyVal] = useState(' ');
+  const lastBackspaceRef = useRef(0);
+
+  // Auto-focus hidden input on mount for immediate typing readiness
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      hiddenInputRef.current?.focus();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const triggerBackspace = () => {
+    const now = Date.now();
+    if (now - lastBackspaceRef.current < 60) return;
+    lastBackspaceRef.current = now;
+    if (onBackspace) onBackspace();
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    if (val === '') {
+      triggerBackspace();
+      setDummyVal(' ');
+    } else if (val.length > 1) {
+      const added = val.slice(1);
+      if (onTypeChar) {
+        for (const ch of added) {
+          onTypeChar(ch);
+        }
+      }
+      setDummyVal(' ');
+    }
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === 'Backspace') {
+      triggerBackspace();
+    }
+  };
 
   // Trigger shake on error
   useEffect(() => {
@@ -82,7 +127,8 @@ export default function TypingArea({
 
   return (
     <div
-      className={`relative w-full min-h-[300px] sm:min-h-[350px] rounded-2xl sm:rounded-3xl border overflow-hidden flex flex-col justify-between select-none transition-all duration-500 ${
+      onClick={() => hiddenInputRef.current?.focus()}
+      className={`relative w-full min-h-[250px] sm:min-h-[320px] md:min-h-[350px] rounded-2xl sm:rounded-3xl border overflow-hidden flex flex-col justify-between select-none transition-all duration-500 cursor-text ${
         shaking ? 'animate-errorShake ring-2 ring-red-500/50' : ''
       }`}
       style={{
@@ -93,6 +139,24 @@ export default function TypingArea({
           : '0 10px 30px rgba(180, 150, 70, 0.15), 0 2px 8px rgba(180, 150, 70, 0.08)'
       }}
     >
+      {/* Hidden Mobile Typing Input (Captures software keyboard on iOS & Android) */}
+      <input
+        ref={hiddenInputRef}
+        type="text"
+        value={dummyVal}
+        onChange={handleInputChange}
+        onKeyDown={handleInputKeyDown}
+        onFocus={() => setIsInputFocused(true)}
+        onBlur={() => setIsInputFocused(false)}
+        autoCapitalize="none"
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck="false"
+        inputMode="text"
+        aria-label="Mobile typing input"
+        className="opacity-0 absolute -top-96 left-0 w-1 h-1 pointer-events-none"
+      />
+
       {/* Dynamic background glow based on tier */}
       <div
         className="absolute inset-0 pointer-events-none transition-all duration-1000 opacity-25"
@@ -125,7 +189,7 @@ export default function TypingArea({
           <img
             src={activeAvatar}
             alt={currentTier.name}
-            className="w-full h-full object-cover object-center transition-all duration-700 ease-out transform scale-110 sm:scale-125 filter contrast-110 saturate-125"
+            className="w-full h-full object-cover object-center transition-all duration-700 ease-out transform scale-105 sm:scale-125 filter contrast-110 saturate-125"
             style={{
               opacity: isDark ? 0.45 : 0.52
             }}
@@ -156,11 +220,31 @@ export default function TypingArea({
         <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none z-0 animate-fadeIn" />
       )}
 
-      {/* Top Bar: Photo Toggle & Progress */}
-      <div className="relative z-10 px-4 sm:px-8 pt-4 sm:pt-5 flex items-center justify-end gap-2.5">
+      {/* Top Bar: Mobile Keyboard Status & Photo Toggle & Progress */}
+      <div className="relative z-10 px-3 sm:px-8 pt-3 sm:pt-5 flex items-center justify-between gap-2">
+        {/* Left: Mobile phone keyboard prompt/status */}
+        <button
+          type="button"
+          tabIndex={-1}
+          onClick={(e) => {
+            e.stopPropagation();
+            hiddenInputRef.current?.focus();
+          }}
+          className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs border cursor-pointer active:scale-95 ${
+            isInputFocused
+              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+              : 'bg-indigo-600 border-indigo-500 text-white shadow-indigo-500/30 animate-pulse'
+          }`}
+          title="Tap to Open Phone Keyboard"
+        >
+          <Smartphone className="w-3.5 h-3.5" />
+          <span className="text-[11px] sm:text-xs">
+            {isInputFocused ? 'Keyboard Active' : 'Tap to Type'}
+          </span>
+        </button>
 
         {/* Right side: Photo Toggle & Progress */}
-        <div className="flex items-center gap-2.5 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
           {/* Background Tier Photo Toggle Button */}
           {onToggleTierPhotos && (
             <button
@@ -271,8 +355,8 @@ export default function TypingArea({
       )}
 
       {/* ─── Main Text Display ─── */}
-      <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-5 sm:px-10 py-5 sm:py-8 transition-opacity duration-300 ${!hasStarted ? 'opacity-70' : 'opacity-100'}`}>
-        <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-2xl sm:text-3xl md:text-[34px] leading-[2.2] sm:leading-[2.4] tracking-wide w-full select-none">
+      <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-3.5 sm:px-10 py-4 sm:py-8 transition-opacity duration-300 ${!hasStarted ? 'opacity-70' : 'opacity-100'}`}>
+        <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-xl sm:text-2xl md:text-[34px] leading-[2.1] sm:leading-[2.4] tracking-wide w-full select-none">
           {words.map((word, wordIndex) => (
             <span key={wordIndex} className="inline-block whitespace-nowrap">
               {word.map(({ char, index }) => {
