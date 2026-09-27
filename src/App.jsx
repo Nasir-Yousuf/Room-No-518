@@ -550,6 +550,7 @@ export default function App() {
           glamourScore={glamourScore}
           isDark={isDark}
           showTierPhotos={showTierPhotos}
+          onToggleTierPhotos={toggleTierPhotos}
           onOpenCustomPhotos={() => setShowAvatarModal(true)}
           onRestart={() => resetGame()}
           onNextLesson={handleNextLesson}

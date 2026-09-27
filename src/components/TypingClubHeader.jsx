@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, Zap, Target, Flame, ArrowLeft, Sparkles } from 'lucide-react';
+import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, ImageOff, Zap, Target, Flame, ArrowLeft, Sparkles } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 export default function TypingClubHeader({
@@ -165,6 +165,24 @@ export default function TypingClubHeader({
             {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
           </button>
 
+          {/* Tier Photos Toggle */}
+          {onToggleTierPhotos && (
+            <button
+              type="button"
+              tabIndex={-1}
+              onFocus={(e) => e.currentTarget.blur()}
+              onClick={onToggleTierPhotos}
+              className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                showTierPhotos
+                  ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'
+                  : 'hover:bg-white/8 text-slate-500 hover:text-white'
+              }`}
+              title={showTierPhotos ? "Tier Photos: ON (Click to turn off)" : "Tier Photos: OFF (Click to turn on)"}
+            >
+              {showTierPhotos ? <ImageIcon className="w-4 h-4" /> : <ImageOff className="w-4 h-4 text-rose-400" />}
+            </button>
+          )}
+
           {/* Custom Photos */}
           {showTierPhotos && (
             <button
@@ -175,7 +193,7 @@ export default function TypingClubHeader({
               className="hidden sm:block p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-purple-400 transition-all duration-200 cursor-pointer"
               title="Customize Tier Photos"
             >
-              <ImageIcon className="w-4 h-4" />
+              <Sparkles className="w-4 h-4" />
             </button>
           )}
 

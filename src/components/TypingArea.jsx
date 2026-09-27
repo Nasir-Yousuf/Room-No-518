@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Flame, Zap, Target, Image as ImageIcon, ArrowRight, RotateCcw } from 'lucide-react';
+import { Sparkles, Flame, Zap, Target, Image as ImageIcon, ImageOff, ArrowRight, RotateCcw } from 'lucide-react';
 
 export default function TypingArea({
   targetText,
@@ -16,6 +16,7 @@ export default function TypingArea({
   glamourScore,
   isDark = false,
   showTierPhotos = true,
+  onToggleTierPhotos,
   onOpenCustomPhotos,
   onRestart,
   onNextLesson,
@@ -29,7 +30,6 @@ export default function TypingArea({
 
   const [shaking, setShaking] = useState(false);
   const [showComboFlash, setShowComboFlash] = useState(false);
-  const [showBgPhoto, setShowBgPhoto] = useState(true);
 
   // Trigger shake on error
   useEffect(() => {
@@ -83,8 +83,8 @@ export default function TypingArea({
         }}
       />
 
-      {/* Zoomed Full-Space Background Tier Photo with Rich Ambient Color Wash (Like Before) */}
-      {showTierPhotos && showBgPhoto && (
+      {/* Zoomed Full-Space Background Tier Photo with Rich Ambient Color Wash */}
+      {showTierPhotos && (
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           {/* Base background color */}
           <div
@@ -113,7 +113,7 @@ export default function TypingArea({
             }}
           />
 
-          {/* Rich Background Color Wash over photo (Like Before: Warm Parchment in Day, Deep Glass in Night) */}
+          {/* Rich Background Color Wash over photo */}
           <div
             className="absolute inset-0 transition-colors duration-500"
             style={{
@@ -143,15 +143,33 @@ export default function TypingArea({
 
         {/* Right side: Photo Toggle & Progress */}
         <div className="flex items-center gap-2.5 flex-shrink-0">
-          {/* Background Photo Toggle Button */}
-          <button
-            onClick={() => setShowBgPhoto(!showBgPhoto)}
-            className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl glass-light hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-all text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-            title={showBgPhoto ? "Hide Background Photo" : "Show Background Photo"}
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">{showBgPhoto ? "Photo On" : "Photo Off"}</span>
-          </button>
+          {/* Background Tier Photo Toggle Button */}
+          {onToggleTierPhotos && (
+            <button
+              type="button"
+              tabIndex={-1}
+              onFocus={(e) => e.currentTarget.blur()}
+              onClick={onToggleTierPhotos}
+              className={`p-1.5 sm:px-2.5 sm:py-1 rounded-xl transition-all text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs border ${
+                showTierPhotos
+                  ? 'bg-purple-500/15 border-purple-500/35 text-purple-600 dark:text-purple-300 hover:bg-purple-500/25'
+                  : 'glass-light border-slate-300/60 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+              title={showTierPhotos ? "Tier Photos are ON. Click to turn off." : "Tier Photos are OFF. Click to turn on."}
+            >
+              {showTierPhotos ? (
+                <>
+                  <ImageIcon className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
+                  <span className="hidden md:inline">Photos: <strong className="text-emerald-600 dark:text-emerald-400">ON</strong></span>
+                </>
+              ) : (
+                <>
+                  <ImageOff className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
+                  <span className="hidden md:inline">Photos: <strong className="text-rose-500 dark:text-rose-400">OFF</strong></span>
+                </>
+              )}
+            </button>
+          )}
 
           {/* Progress indicator */}
           {hasStarted && (
