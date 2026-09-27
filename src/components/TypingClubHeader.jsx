@@ -34,6 +34,9 @@ export default function TypingClubHeader({
       {/* Left: Back + Lesson Info */}
       <div className="flex items-center gap-2 sm:gap-3">
         <button
+          type="button"
+          tabIndex={-1}
+          onFocus={(e) => e.currentTarget.blur()}
           onClick={onOpenLessons}
           className="p-2 rounded-xl glass-light hover:bg-white/10 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer group"
           title="Back to Lessons"
@@ -78,6 +81,9 @@ export default function TypingClubHeader({
 
           {/* Tier Badge */}
           <button
+            type="button"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
             onClick={showTierPhotos ? onOpenCustomPhotos : undefined}
             className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-xl text-xs sm:text-sm font-black transition-all duration-300 shadow-sm hover:scale-105 cursor-pointer group"
             style={{
@@ -109,6 +115,9 @@ export default function TypingClubHeader({
         <div className="flex items-center gap-0.5 sm:gap-1">
           {/* Restart */}
           <button
+            type="button"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
             onClick={onReset}
             className="p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer group"
             title="Restart Lesson"
@@ -118,6 +127,9 @@ export default function TypingClubHeader({
 
           {/* Toggle Keyboard */}
           <button
+            type="button"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
             onClick={onToggleKeyboard}
             className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
               showKeyboard ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/8 text-slate-500 hover:text-white'
@@ -129,6 +141,9 @@ export default function TypingClubHeader({
 
           {/* Toggle Hands */}
           <button
+            type="button"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
             onClick={onToggleHands}
             className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
               showHands ? 'bg-indigo-500/20 text-indigo-400' : 'hover:bg-white/8 text-slate-500 hover:text-white'
@@ -140,6 +155,9 @@ export default function TypingClubHeader({
 
           {/* Sound Toggle */}
           <button
+            type="button"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
             onClick={onToggleSound}
             className="p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-white transition-all duration-200 cursor-pointer"
             title={soundOn ? "Mute Sound" : "Enable Sound"}
@@ -150,6 +168,9 @@ export default function TypingClubHeader({
           {/* Custom Photos */}
           {showTierPhotos && (
             <button
+              type="button"
+              tabIndex={-1}
+              onFocus={(e) => e.currentTarget.blur()}
               onClick={onOpenCustomPhotos}
               className="hidden sm:block p-2 rounded-xl hover:bg-white/8 text-slate-400 hover:text-purple-400 transition-all duration-200 cursor-pointer"
               title="Customize Tier Photos"

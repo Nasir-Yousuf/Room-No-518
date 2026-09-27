@@ -169,11 +169,25 @@ export default function ResultsModal({
     }
   }, [stars]);
 
-  // Global Keyboard Shortcuts for Results View
+  // Global Keyboard Shortcuts for Results View with cooldown to prevent trailing keystroke restarts
+  const [canHandleKeys, setCanHandleKeys] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCanHandleKeys(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setCanHandleKeys(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
+      if (!canHandleKeys) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       if (e.key === 'Enter') {
@@ -195,7 +209,7 @@ export default function ResultsModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, hasNextLesson, onNextLesson, onRestart, onBackToLessons, onClose]);
+  }, [isOpen, canHandleKeys, hasNextLesson, onNextLesson, onRestart, onBackToLessons, onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col text-white select-none animate-fadeIn overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>

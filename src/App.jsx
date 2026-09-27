@@ -114,13 +114,31 @@ export default function App() {
   }, []);
 
   // Typing States
-  const [targetText, setTargetText] = useState(ALL_500_LESSONS[0].text);
+  const [targetText, setTargetText] = useState(() => currentLesson?.text || ALL_685_LESSONS[0].text);
   const [userInput, setUserInput] = useState('');
   const [glamourScore, setGlamourScore] = useState(55);
   const [combo, setCombo] = useState(0);
   const [peakCombo, setPeakCombo] = useState(0);
   const [totalErrors, setTotalErrors] = useState(0);
   const [lastErrorTrigger, setLastErrorTrigger] = useState(0);
+
+  // Sync targetText whenever currentLesson changes or typing view opens
+  useEffect(() => {
+    if (currentLesson?.text) {
+      setTargetText(currentLesson.text);
+    }
+  }, [currentLesson]);
+
+  useEffect(() => {
+    if (currentView === 'typing') {
+      if (document.activeElement && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      if (currentLesson?.text && targetText !== currentLesson.text) {
+        setTargetText(currentLesson.text);
+      }
+    }
+  }, [currentView, currentLesson, targetText]);
 
   // Time & Metrics
   const [_startTime, setStartTime] = useState(null);
@@ -457,7 +475,12 @@ export default function App() {
       <TypingClubLessonMap
         currentLessonNumber={currentLesson.number}
         onSelectLesson={handleSelectLesson}
-        onBackToTyping={() => setCurrentView('typing')}
+        onBackToTyping={() => {
+          if (currentLesson?.text) {
+            setTargetText(currentLesson.text);
+          }
+          setCurrentView('typing');
+        }}
         completedStars={completedStars}
         isDark={isDark}
         onToggleTheme={toggleTheme}
