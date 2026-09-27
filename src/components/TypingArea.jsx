@@ -26,7 +26,6 @@ export default function TypingArea({
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
   const textContainerRef = useRef(null);
 
-  const [dialogue, setDialogue] = useState(currentTier.dialogues[0]);
   const [shaking, setShaking] = useState(false);
   const [showComboFlash, setShowComboFlash] = useState(false);
   const [showBgPhoto, setShowBgPhoto] = useState(true);
@@ -40,20 +39,14 @@ export default function TypingArea({
     }
   }, [lastErrorTrigger]);
 
-  // Update dialogue
+  // Combo milestone flash
   useEffect(() => {
-    if (lastErrorTrigger > 0) {
-      if (currentTier.tier <= 2) {
-        const d = currentTier.dialogues[Math.floor(Math.random() * currentTier.dialogues.length)];
-        setDialogue(d);
-      }
-    } else if (combo > 0 && combo % 10 === 0) {
-      const d = currentTier.dialogues[Math.floor(Math.random() * currentTier.dialogues.length)];
-      setDialogue(d);
+    if (combo > 0 && combo % 10 === 0) {
       setShowComboFlash(true);
-      setTimeout(() => setShowComboFlash(false), 800);
+      const timer = setTimeout(() => setShowComboFlash(false), 800);
+      return () => clearTimeout(timer);
     }
-  }, [combo, lastErrorTrigger, currentTier]);
+  }, [combo]);
 
   // Auto-scroll text into view
   useEffect(() => {
@@ -113,7 +106,7 @@ export default function TypingArea({
           <img
             src={activeAvatar}
             alt={currentTier.name}
-            className="w-full h-full object-cover object-[center_25%] transition-all duration-700 ease-out transform scale-110 sm:scale-125 filter contrast-110 saturate-125"
+            className="w-full h-full object-cover object-center transition-all duration-700 ease-out transform scale-110 sm:scale-125 filter contrast-110 saturate-125"
             style={{
               opacity: isDark ? 0.45 : 0.52
             }}
@@ -144,62 +137,8 @@ export default function TypingArea({
         <div className="absolute inset-0 bg-indigo-500/5 pointer-events-none z-0 animate-fadeIn" />
       )}
 
-      {/* Top Bar: Tier Avatar + Badge + Dialogue + Progress & Photo Toggle */}
-      <div className="relative z-10 px-4 sm:px-8 pt-4 sm:pt-5 flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          {/* Tier Avatar Character Photo */}
-          <div
-            onClick={onOpenCustomPhotos}
-            className="relative flex-shrink-0 cursor-pointer group/avatar"
-            title="Click to customize tier photos"
-          >
-            <div
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border-2 shadow-lg transition-all duration-300 group-hover/avatar:scale-105 group-hover/avatar:shadow-xl"
-              style={{
-                borderColor: currentTier.themeColor,
-                boxShadow: `0 0 16px ${currentTier.themeColor}40`
-              }}
-            >
-              <img
-                src={activeAvatar}
-                alt={currentTier.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover/avatar:scale-110"
-              />
-            </div>
-            {/* Tier mini badge overlay */}
-            <span
-              className="absolute -bottom-1 -right-1 text-[10px] font-black px-1.5 py-0.5 rounded-md text-white shadow-md flex items-center gap-0.5"
-              style={{ backgroundColor: currentTier.themeColor }}
-            >
-              T{currentTier.tier}
-            </span>
-          </div>
-
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className="text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all duration-500 shadow-sm"
-                style={{
-                  background: `${currentTier.themeColor}20`,
-                  color: currentTier.themeColor,
-                  border: `1px solid ${currentTier.themeColor}30`,
-                  boxShadow: `0 0 20px ${currentTier.themeColor}15`
-                }}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                {currentTier.name}
-              </span>
-              <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
-                {currentTier.targetSpeed}
-              </span>
-            </div>
-
-            {/* Character Reaction Dialogue */}
-            <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-semibold italic mt-1 max-w-[280px] sm:max-w-[420px] truncate">
-              "{dialogue}"
-            </span>
-          </div>
-        </div>
+      {/* Top Bar: Photo Toggle & Progress */}
+      <div className="relative z-10 px-4 sm:px-8 pt-4 sm:pt-5 flex items-center justify-end gap-2.5">
 
         {/* Right side: Photo Toggle & Progress */}
         <div className="flex items-center gap-2.5 flex-shrink-0">
