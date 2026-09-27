@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Sparkles, Flame, Zap, Target, Image as ImageIcon, ImageOff, ArrowRight, RotateCcw } from 'lucide-react';
 
 export default function TypingArea({
@@ -24,9 +24,27 @@ export default function TypingArea({
   onShowResults
 }) {
   const currentIdx = userInput.length;
-  const targetChars = targetText.split('');
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
   const textContainerRef = useRef(null);
+
+  // Group characters into whole words so words NEVER split across lines
+  const words = useMemo(() => {
+    const list = [];
+    let currentWord = [];
+
+    for (let i = 0; i < targetText.length; i++) {
+      const char = targetText[i];
+      currentWord.push({ char, index: i });
+
+      // End of word when hitting space or end of drill text
+      if (char === ' ' || i === targetText.length - 1) {
+        list.push(currentWord);
+        currentWord = [];
+      }
+    }
+
+    return list;
+  }, [targetText]);
 
   const [shaking, setShaking] = useState(false);
   const [showComboFlash, setShowComboFlash] = useState(false);
@@ -254,67 +272,71 @@ export default function TypingArea({
 
       {/* ─── Main Text Display ─── */}
       <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-5 sm:px-10 py-5 sm:py-8 transition-opacity duration-300 ${!hasStarted ? 'opacity-70' : 'opacity-100'}`}>
-        <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-2xl sm:text-3xl md:text-[34px] leading-[2.2] sm:leading-[2.4] tracking-wide break-words w-full select-none">
-          {targetChars.map((char, index) => {
-            const isCurrent = index === currentIdx;
-            const isTyped = index < currentIdx;
-            const isSpace = char === ' ';
+        <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-2xl sm:text-3xl md:text-[34px] leading-[2.2] sm:leading-[2.4] tracking-wide w-full select-none">
+          {words.map((word, wordIndex) => (
+            <span key={wordIndex} className="inline-block whitespace-nowrap">
+              {word.map(({ char, index }) => {
+                const isCurrent = index === currentIdx;
+                const isTyped = index < currentIdx;
+                const isSpace = char === ' ';
 
-            if (isTyped) {
-              const typedChar = userInput[index];
-              const isCorrect = typedChar === char;
+                if (isTyped) {
+                  const typedChar = userInput[index];
+                  const isCorrect = typedChar === char;
 
-              return (
-                <span
-                  key={index}
-                  className={`inline transition-all duration-100 ${
-                    isCorrect
-                      ? isSpace
-                        ? 'bg-white/70 dark:bg-white/10 px-[1.5px] rounded-xs'
-                        : 'bg-white/85 dark:bg-white/15 text-[#24201A] dark:text-slate-100 rounded-xs px-[1px] shadow-[0_1px_1px_rgba(0,0,0,0.05)]'
-                      : isSpace
-                      ? 'bg-rose-200/80 dark:bg-rose-900/60 rounded-xs px-[1.5px]'
-                      : 'bg-rose-200/90 dark:bg-rose-900/70 text-rose-800 dark:text-rose-200 font-bold rounded-xs px-[1px] shadow-[0_1px_1px_rgba(225,29,72,0.15)]'
-                  }`}
-                >
-                  {isSpace ? '\u00A0' : char}
-                </span>
-              );
-            }
+                  return (
+                    <span
+                      key={index}
+                      className={`inline transition-all duration-100 ${
+                        isCorrect
+                          ? isSpace
+                            ? 'bg-white/70 dark:bg-white/10 px-[1.5px] rounded-xs'
+                            : 'bg-white/85 dark:bg-white/15 text-[#24201A] dark:text-slate-100 rounded-xs px-[1px] shadow-[0_1px_1px_rgba(0,0,0,0.05)]'
+                          : isSpace
+                          ? 'bg-rose-200/80 dark:bg-rose-900/60 rounded-xs px-[1.5px]'
+                          : 'bg-rose-200/90 dark:bg-rose-900/70 text-rose-800 dark:text-rose-200 font-bold rounded-xs px-[1px] shadow-[0_1px_1px_rgba(225,29,72,0.15)]'
+                      }`}
+                    >
+                      {isSpace ? '\u00A0' : char}
+                    </span>
+                  );
+                }
 
-            if (isCurrent) {
-              return (
-                <span
-                  key={index}
-                  data-active="true"
-                  className={`relative inline font-medium rounded-xs transition-all ${
-                    isSpace
-                      ? 'bg-[#FDE047]/80 dark:bg-amber-400/80 px-[3px]'
-                      : 'bg-[#FDE047] dark:bg-amber-400 text-slate-950 px-[1.5px]'
-                  }`}
-                  style={{
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
-                  }}
-                >
-                  {isSpace ? '\u00A0' : char}
-                  {/* Authentic TypingClub bright blue underline cursor */}
+                if (isCurrent) {
+                  return (
+                    <span
+                      key={index}
+                      data-active="true"
+                      className={`relative inline font-medium rounded-xs transition-all ${
+                        isSpace
+                          ? 'bg-[#FDE047]/80 dark:bg-amber-400/80 px-[3px]'
+                          : 'bg-[#FDE047] dark:bg-amber-400 text-slate-950 px-[1.5px]'
+                      }`}
+                      style={{
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
+                      }}
+                    >
+                      {isSpace ? '\u00A0' : char}
+                      {/* Authentic TypingClub bright blue underline cursor */}
+                      <span
+                        className="absolute -bottom-[3.5px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#38BDF8] rounded-full shadow-[0_1px_3px_rgba(37,99,235,0.4)]"
+                      />
+                    </span>
+                  );
+                }
+
+                // Upcoming characters
+                return (
                   <span
-                    className="absolute -bottom-[3.5px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#38BDF8] rounded-full shadow-[0_1px_3px_rgba(37,99,235,0.4)]"
-                  />
-                </span>
-              );
-            }
-
-            // Upcoming characters
-            return (
-              <span
-                key={index}
-                className="inline transition-colors text-[#2C2720] dark:text-slate-200/85 px-[0.5px]"
-              >
-                {isSpace ? '\u00A0' : char}
-              </span>
-            );
-          })}
+                    key={index}
+                    className="inline transition-colors text-[#2C2720] dark:text-slate-200/85 px-[0.5px]"
+                  >
+                    {isSpace ? '\u00A0' : char}
+                  </span>
+                );
+              })}
+            </span>
+          ))}
         </div>
       </div>
 
