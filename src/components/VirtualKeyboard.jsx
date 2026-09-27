@@ -81,7 +81,8 @@ export default function VirtualKeyboard({
   targetChar,
   activeKey,
   showGuide = true,
-  showHands = true
+  showHands = true,
+  language = 'en'
 }) {
   const isSpaceTarget = targetChar === ' ';
   const isShiftTarget = targetChar && targetChar !== ' ' && targetChar === targetChar.toUpperCase() && targetChar.match(/[A-Z!@#$%^&*()_+{}|:"<>?~]/);
@@ -110,6 +111,11 @@ export default function VirtualKeyboard({
       {targetChar && (
         <div className="w-full flex justify-center mb-2">
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg glass-light text-xs font-bold text-slate-600 dark:text-slate-300">
+            {language === 'bn' && (
+              <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                অভ্র
+              </span>
+            )}
             <span>Next key:</span>
             <span
               className="font-mono text-xs px-2 py-0.5 rounded-md font-black shadow-sm"

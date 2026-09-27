@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { ALL_685_LESSONS, ALL_500_LESSONS, BEAUTY_TIERS } from './data/lessons';
+import { ALL_BANGLA_LESSONS, BANGLA_STAGES } from './data/banglaLessons';
+import { transliterateAvro, checkAvroWordMatch } from './utils/avroPhonetic';
 import TypingClubHeader from './components/TypingClubHeader';
 import TypingArea from './components/TypingArea';
 import VirtualKeyboard from './components/VirtualKeyboard';
@@ -18,6 +20,20 @@ import {
 } from './audio';
 
 export default function App() {
+  // Language mode: 'en' (English) | 'bn' (Bangla Avro)
+  const [language, setLanguage] = useState(() => {
+    try {
+      const saved = localStorage.getItem('glowtype_language');
+      if (saved === 'bn' || saved === 'en') return saved;
+    } catch {}
+    return 'en';
+  });
+
+  // Active curriculum based on chosen language
+  const activeLessons = useMemo(() => {
+    return language === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
+  }, [language]);
+
   // Check URL on startup for deep links (e.g. ?lesson=183 or #lesson-183)
   const initialUrlLesson = useRef(getLessonFromUrl(ALL_685_LESSONS)).current;
 
@@ -35,31 +51,21 @@ export default function App() {
   const [currentLesson, setCurrentLesson] = useState(() => {
     if (initialUrlLesson) return initialUrlLesson;
     try {
-      const savedNum = localStorage.getItem('glowtype_current_lesson');
+      const savedLang = localStorage.getItem('glowtype_language');
+      const list = savedLang === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
+      const key = savedLang === 'bn' ? 'glowtype_current_lesson_bn' : 'glowtype_current_lesson';
+      const savedNum = localStorage.getItem(key);
       if (savedNum) {
         const num = parseInt(savedNum, 10);
-        const found = ALL_685_LESSONS.find((l) => l.number === num);
+        const found = list.find((l) => l.number === num);
         if (found) return found;
       }
+      return list[0];
     } catch {}
     return ALL_685_LESSONS[0];
   });
 
-  const [currentLessonIndex, setCurrentLessonIndex] = useState(() => {
-    if (initialUrlLesson) {
-      const idx = ALL_685_LESSONS.findIndex((l) => l.number === initialUrlLesson.number);
-      if (idx !== -1) return idx;
-    }
-    try {
-      const savedNum = localStorage.getItem('glowtype_current_lesson');
-      if (savedNum) {
-        const num = parseInt(savedNum, 10);
-        const idx = ALL_685_LESSONS.findIndex((l) => l.number === num);
-        if (idx !== -1) return idx;
-      }
-    } catch {}
-    return 0;
-  });
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
 
   const currentLessonRef = useRef(currentLesson);
   useEffect(() => {
@@ -133,6 +139,9 @@ export default function App() {
   // Typing States
   const [targetText, setTargetText] = useState(() => currentLesson?.text || ALL_685_LESSONS[0].text);
   const [userInput, setUserInput] = useState('');
+  const [avroWordIndex, setAvroWordIndex] = useState(0);
+  const [avroWordInput, setAvroWordInput] = useState('');
+  const [avroWordResults, setAvroWordResults] = useState([]);
   const [glamourScore, setGlamourScore] = useState(55);
   const [combo, setCombo] = useState(0);
   const [peakCombo, setPeakCombo] = useState(0);
@@ -285,7 +294,7 @@ export default function App() {
     return 15;
   }, []);
 
-  const resetGame = useCallback((lessonToUse = null, mode = gameMode) => {
+  const resetGame = useCallback((lessonToUse = null, mode = gameMode, langToUse = language) => {
     const lesson = lessonToUse || currentLessonRef.current || currentLesson;
     let text = lesson.text;
     if (mode === 'blitz30' || mode === 'blitz60') {
@@ -294,6 +303,9 @@ export default function App() {
 
     setTargetText(text);
     setUserInput('');
+    setAvroWordIndex(0);
+    setAvroWordInput('');
+    setAvroWordResults([]);
     setGlamourScore(55);
     setCombo(0);
     setPeakCombo(0);
@@ -309,7 +321,30 @@ export default function App() {
     recentKeystrokes.current = [];
     errorPenaltyUntil.current = 0;
     prevTierRef.current = 3;
-  }, [currentLesson, gameMode]);
+  }, [currentLesson, gameMode, language]);
+
+  // Language switcher handler
+  const handleSelectLanguage = (newLang) => {
+    if (newLang === language) return;
+    setLanguage(newLang);
+    try {
+      localStorage.setItem('glowtype_language', newLang);
+      const starsKey = newLang === 'bn' ? 'glowtype_lesson_stars_bn' : 'glowtype_lesson_stars';
+      const savedStars = localStorage.getItem(starsKey);
+      setCompletedStars(savedStars ? JSON.parse(savedStars) : {});
+    } catch {}
+
+    const list = newLang === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
+    const targetLesson = list[0];
+    setCurrentLesson(targetLesson);
+    currentLessonRef.current = targetLesson;
+    setCurrentLessonIndex(0);
+    resetGame(targetLesson, gameMode, newLang);
+  };
+
+  const toggleLanguage = () => {
+    handleSelectLanguage(language === 'bn' ? 'en' : 'bn');
+  };
 
   // Inject Typing Club SVG Sprite on initial mount for instant zero-latency vector rendering
   useEffect(() => {
@@ -329,28 +364,32 @@ export default function App() {
 
   const handleSelectLesson = (lesson) => {
     if (!lesson) return;
-    const fullLesson = ALL_685_LESSONS.find((l) => l.number === lesson.number) || lesson;
+    const list = language === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
+    const fullLesson = list.find((l) => l.number === lesson.number) || lesson;
     setCurrentLesson(fullLesson);
     currentLessonRef.current = fullLesson;
-    const idx = ALL_685_LESSONS.findIndex((l) => l.number === fullLesson.number);
+    const idx = list.findIndex((l) => l.number === fullLesson.number);
     setCurrentLessonIndex(idx !== -1 ? idx : 0);
-    resetGame(fullLesson, gameMode);
+    resetGame(fullLesson, gameMode, language);
     setCurrentView('typing');
     try {
-      localStorage.setItem('glowtype_current_lesson', String(fullLesson.number));
+      const key = language === 'bn' ? 'glowtype_current_lesson_bn' : 'glowtype_current_lesson';
+      localStorage.setItem(key, String(fullLesson.number));
     } catch {}
   };
 
   const handleNextLesson = () => {
+    const list = language === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
     const currentNum = currentLessonRef.current?.number || currentLesson?.number || 1;
-    const nextLesson = ALL_685_LESSONS.find((l) => l.number === currentNum + 1) || ALL_685_LESSONS[0];
-    const nextIdx = ALL_685_LESSONS.findIndex((l) => l.number === nextLesson.number);
+    const nextLesson = list.find((l) => l.number === currentNum + 1) || list[0];
+    const nextIdx = list.findIndex((l) => l.number === nextLesson.number);
     setCurrentLesson(nextLesson);
     currentLessonRef.current = nextLesson;
     setCurrentLessonIndex(nextIdx !== -1 ? nextIdx : 0);
-    resetGame(nextLesson, gameMode);
+    resetGame(nextLesson, gameMode, language);
     try {
-      localStorage.setItem('glowtype_current_lesson', String(nextLesson.number));
+      const key = language === 'bn' ? 'glowtype_current_lesson_bn' : 'glowtype_current_lesson';
+      localStorage.setItem(key, String(nextLesson.number));
     } catch {}
   };
 
@@ -414,19 +453,28 @@ export default function App() {
     setIsFinished(true);
     setShowResults(true);
 
+    let finalAcc = accuracy;
+    if (language === 'bn') {
+      const totalWords = currentLessonRef.current?.words?.length || 1;
+      const correctWords = avroWordResults.filter((r) => r.isCorrect).length;
+      finalAcc = Math.round((correctWords / Math.max(1, totalWords)) * 100);
+      setAccuracy(finalAcc);
+    }
+
     // Calculate & persist stars (1 to 5 stars)
     let stars = 1;
-    if (accuracy >= 80 && wpm >= 3) stars = 2;
-    if (accuracy >= 88 && wpm >= 5) stars = 3;
-    if (accuracy >= 94 && wpm >= 7) stars = 4;
-    if (accuracy >= 98 && wpm >= 9) stars = 5;
+    if (finalAcc >= 80 && wpm >= 3) stars = 2;
+    if (finalAcc >= 88 && wpm >= 5) stars = 3;
+    if (finalAcc >= 94 && wpm >= 7) stars = 4;
+    if (finalAcc >= 98 && wpm >= 9) stars = 5;
 
     const lessonNum = currentLessonRef.current?.number || currentLesson?.number || 1;
+    const storageKey = language === 'bn' ? 'glowtype_lesson_stars_bn' : 'glowtype_lesson_stars';
     setCompletedStars((prev) => {
       const currentBest = prev[lessonNum] || 0;
       const updated = { ...prev, [lessonNum]: Math.max(currentBest, stars) };
       try {
-        localStorage.setItem('glowtype_lesson_stars', JSON.stringify(updated));
+        localStorage.setItem(storageKey, JSON.stringify(updated));
       } catch {}
       return updated;
     });
@@ -451,6 +499,83 @@ export default function App() {
       setStartTime(now);
     }
 
+    // ─── Bangla Avro Phonetic Mode ───
+    if (language === 'bn') {
+      const targetWords = currentLessonRef.current?.words || [];
+      const currentWordObj = targetWords[avroWordIndex] || { bangla: '', avro: '' };
+
+      // Case 1: Space pressed -> commit current word
+      if (charTyped === ' ') {
+        if (!avroWordInput.trim()) return;
+
+        const isMatch = checkAvroWordMatch(avroWordInput, currentWordObj.bangla, currentWordObj.avro);
+
+        if (isMatch) {
+          playKeyClick(true);
+          const newCombo = combo + 1;
+          setCombo(newCombo);
+          if (newCombo > peakCombo) setPeakCombo(newCombo);
+          if (newCombo % 10 === 0) playStreakChime(newCombo);
+
+          recentKeystrokes.current.push(now);
+          recentKeystrokes.current = recentKeystrokes.current.filter((t) => now - t <= 5000);
+          const liveSpeed = Math.round(recentKeystrokes.current.length * 2.4);
+          setWpm(liveSpeed);
+          setGlamourScore(calculateGlamourFromSpeed(liveSpeed));
+
+          setAvroWordResults((prev) => [...prev, { isCorrect: true, typed: avroWordInput }]);
+          const nextWordIdx = avroWordIndex + 1;
+          setAvroWordInput('');
+          setAvroWordIndex(nextWordIdx);
+
+          if (nextWordIdx >= targetWords.length) {
+            finishGame();
+          }
+        } else {
+          playErrorSound();
+          setLastErrorTrigger(now);
+          setCombo(0);
+          setTotalErrors((prev) => prev + 1);
+          errorPenaltyUntil.current = now + 1800;
+          setGlamourScore(15);
+
+          setAvroWordResults((prev) => [...prev, { isCorrect: false, typed: avroWordInput }]);
+          const nextWordIdx = avroWordIndex + 1;
+          setAvroWordInput('');
+          setAvroWordIndex(nextWordIdx);
+
+          if (nextWordIdx >= targetWords.length) {
+            finishGame();
+          }
+        }
+        return;
+      }
+
+      // Case 2: Letter / Character typed
+      playKeyClick(false);
+      const nextWordInput = avroWordInput + charTyped;
+      setAvroWordInput(nextWordInput);
+
+      recentKeystrokes.current.push(now);
+      recentKeystrokes.current = recentKeystrokes.current.filter((t) => now - t <= 5000);
+      const liveSpeed = Math.round(recentKeystrokes.current.length * 2.4);
+      setWpm(liveSpeed);
+      setGlamourScore(calculateGlamourFromSpeed(liveSpeed));
+
+      // Auto-finish on final word if match
+      if (avroWordIndex === targetWords.length - 1) {
+        const isMatch = checkAvroWordMatch(nextWordInput, currentWordObj.bangla, currentWordObj.avro);
+        if (isMatch) {
+          playKeyClick(true);
+          setAvroWordResults((prev) => [...prev, { isCorrect: true, typed: nextWordInput }]);
+          setAvroWordIndex(avroWordIndex + 1);
+          finishGame();
+        }
+      }
+      return;
+    }
+
+    // ─── English Mode (Classic Letter-by-Letter) ───
     const expectedChar = targetText[userInput.length];
     const isCorrect = charTyped === expectedChar;
 
@@ -499,15 +624,43 @@ export default function App() {
         finishGame();
       }
     }
-  }, [userInput, targetText, combo, peakCombo, totalErrors, isFinished, isPaused, hasStarted, gameMode, calculateGlamourFromSpeed]);
+  }, [
+    language,
+    avroWordIndex,
+    avroWordInput,
+    avroWordResults,
+    userInput,
+    targetText,
+    combo,
+    peakCombo,
+    totalErrors,
+    isFinished,
+    isPaused,
+    hasStarted,
+    gameMode,
+    calculateGlamourFromSpeed
+  ]);
 
   // Central backspace handler
   const handleBackspace = useCallback(() => {
     if (isFinished || isPaused) return;
+
+    if (language === 'bn') {
+      if (avroWordInput.length > 0) {
+        setAvroWordInput((prev) => prev.slice(0, -1));
+      } else if (avroWordIndex > 0) {
+        const prevIdx = avroWordIndex - 1;
+        setAvroWordIndex(prevIdx);
+        setAvroWordInput(avroWordResults[prevIdx]?.typed || '');
+        setAvroWordResults((prev) => prev.slice(0, -1));
+      }
+      return;
+    }
+
     if (userInput.length > 0) {
       setUserInput((prev) => prev.slice(0, -1));
     }
-  }, [isFinished, isPaused, userInput]);
+  }, [isFinished, isPaused, language, avroWordInput, avroWordIndex, avroWordResults, userInput]);
 
   useEffect(() => {
     if (currentView !== 'typing') return;
@@ -549,7 +702,19 @@ export default function App() {
     };
   }, [currentView, showAvatarModal, handleCharTyped, handleBackspace]);
 
-  const currentTargetChar = targetText[userInput.length] || '';
+  const currentTargetChar = useMemo(() => {
+    if (language === 'bn') {
+      const targetWords = currentLesson?.words || [];
+      const currentWordObj = targetWords[avroWordIndex];
+      if (!currentWordObj) return '';
+      const phonetic = currentWordObj.avro || '';
+      if (avroWordInput.length < phonetic.length) {
+        return phonetic[avroWordInput.length] || '';
+      }
+      return ' '; // Space to complete word
+    }
+    return targetText[userInput.length] || '';
+  }, [language, currentLesson, avroWordIndex, avroWordInput, targetText, userInput]);
 
   const currentTier = BEAUTY_TIERS.find(
     (t) => glamourScore >= t.minScore && glamourScore <= t.maxScore
@@ -574,6 +739,8 @@ export default function App() {
           showTierPhotos={showTierPhotos}
           onToggleTierPhotos={toggleTierPhotos}
           onShareLesson={handleShareLesson}
+          language={language}
+          onSelectLanguage={handleSelectLanguage}
         />
         <ShareToast toast={shareToast} onClose={() => setShareToast(null)} />
       </>
@@ -621,6 +788,8 @@ export default function App() {
         showTierPhotos={showTierPhotos}
         onToggleTierPhotos={toggleTierPhotos}
         onShareLesson={handleShareLesson}
+        language={language}
+        onToggleLanguage={toggleLanguage}
       />
 
       {/* Main Typing Arena */}
@@ -645,10 +814,15 @@ export default function App() {
           onOpenCustomPhotos={() => setShowAvatarModal(true)}
           onRestart={() => resetGame()}
           onNextLesson={handleNextLesson}
-          hasNextLesson={currentLesson.number < 685}
+          hasNextLesson={currentLesson.number < activeLessons.length}
           onShowResults={() => setShowResults(true)}
           onTypeChar={handleCharTyped}
           onBackspace={handleBackspace}
+          language={language}
+          currentLesson={currentLesson}
+          avroWordIndex={avroWordIndex}
+          avroWordInput={avroWordInput}
+          avroWordResults={avroWordResults}
         />
 
         {/* Virtual Keyboard */}
@@ -657,6 +831,7 @@ export default function App() {
           activeKey={activeKey}
           showGuide={showKeyboard}
           showHands={showHands}
+          language={language}
         />
       </main>
 

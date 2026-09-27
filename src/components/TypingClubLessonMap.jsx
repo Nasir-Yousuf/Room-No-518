@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown, Image as ImageIcon, ImageOff, Share2 } from 'lucide-react';
 import { LESSON_STAGES, ALL_685_LESSONS } from '../data/lessons';
+import { BANGLA_STAGES, ALL_BANGLA_LESSONS } from '../data/banglaLessons';
 import ThemeToggle from './ThemeToggle';
 
 // Helper component to render icons directly from Typing Club's official svgsprite-cmn.svg
@@ -181,14 +182,25 @@ export default function TypingClubLessonMap({
   onToggleTheme,
   showTierPhotos = true,
   onToggleTierPhotos,
-  onShareLesson
+  onShareLesson,
+  language = 'en',
+  onSelectLanguage
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedStages, setCollapsedStages] = useState({});
   const mainRef = useRef(null);
 
+  const activeLessons = useMemo(() => {
+    return language === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
+  }, [language]);
+
+  const activeStages = useMemo(() => {
+    return language === 'bn' ? BANGLA_STAGES : LESSON_STAGES;
+  }, [language]);
+
+  const totalLessonsCount = activeLessons.length;
   const totalCompleted = Object.keys(completedStars).length;
-  const progressPercent = Math.min(100, Math.round((totalCompleted / 685) * 100));
+  const progressPercent = Math.min(100, Math.round((totalCompleted / Math.max(1, totalLessonsCount)) * 100));
   const totalStars = Object.values(completedStars).reduce((acc, s) => acc + s, 0);
   const totalPoints = totalStars * 400 + totalCompleted * 1000;
 
@@ -197,27 +209,29 @@ export default function TypingClubLessonMap({
       const q = searchQuery.trim().toLowerCase();
       const qNum = parseInt(q, 10);
       if (!isNaN(qNum) && qNum.toString() === q) {
-        // User typed a specific lesson number e.g. "93"
-        // Return exact lesson number match as primary result
-        const exact = ALL_685_LESSONS.filter((l) => l.number === qNum);
+        const exact = activeLessons.filter((l) => l.number === qNum);
         if (exact.length > 0) return exact;
       }
-      return ALL_685_LESSONS.filter(
-        (l) => l.number === qNum || l.title.toLowerCase().includes(q) || l.text.toLowerCase().includes(q)
+      return activeLessons.filter(
+        (l) =>
+          l.number === qNum ||
+          l.title.toLowerCase().includes(q) ||
+          l.text.toLowerCase().includes(q) ||
+          (l.phoneticHint && l.phoneticHint.toLowerCase().includes(q))
       );
     }
-    return ALL_685_LESSONS;
-  }, [searchQuery]);
+    return activeLessons;
+  }, [searchQuery, activeLessons]);
 
   const stagesWithLessons = useMemo(() => {
     if (searchQuery.trim() !== '') {
       return [{ id: 0, name: 'Search Results', lessons: filteredLessons, icon: '🔍', description: `${filteredLessons.length} matches found` }];
     }
-    return LESSON_STAGES.map((stage) => ({
+    return activeStages.map((stage) => ({
       ...stage,
-      lessons: ALL_685_LESSONS.filter((l) => l.stageId === stage.id)
+      lessons: activeLessons.filter((l) => l.stageId === stage.id)
     }));
-  }, [searchQuery, filteredLessons]);
+  }, [searchQuery, filteredLessons, activeStages, activeLessons]);
 
   const toggleStage = (stageId) => {
     setCollapsedStages(prev => ({ ...prev, [stageId]: !prev[stageId] }));
@@ -248,8 +262,42 @@ export default function TypingClubLessonMap({
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-black tracking-tight gradient-text">room-no-518</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold -mt-0.5">Typing Club • 685 Lessons</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold -mt-0.5">
+              {language === 'bn' ? 'অভ্র ফোনেটিক • ৮০ Lessons' : 'Typing Club • 685 Lessons'}
+            </p>
           </div>
+        </div>
+
+        {/* Language Selector: English vs Bangla Avro (অভ্র) */}
+        <div className="flex items-center p-1 rounded-2xl glass-strong border border-slate-300/50 dark:border-white/10 shadow-xs my-1 sm:my-0">
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => onSelectLanguage && onSelectLanguage('en')}
+            className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              language === 'en'
+                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+            title="English Touch Typing (685 Lessons)"
+          >
+            <span>🇬🇧 English</span>
+            <span className="text-[10px] opacity-80 font-normal hidden sm:inline">(685)</span>
+          </button>
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => onSelectLanguage && onSelectLanguage('bn')}
+            className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              language === 'bn'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+            title="Bangla Avro Phonetic Typing (অভ্র)"
+          >
+            <span>🇧🇩 বাংলা অভ্র</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold">New</span>
+          </button>
         </div>
 
         {/* Stats Pills */}

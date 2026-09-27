@@ -23,7 +23,9 @@ export default function TypingClubHeader({
   customAvatars = {},
   showTierPhotos = true,
   onToggleTierPhotos,
-  onShareLesson
+  onShareLesson,
+  language = 'en',
+  onToggleLanguage
 }) {
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
 
@@ -75,6 +77,24 @@ export default function TypingClubHeader({
           >
             <Share2 className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Share</span>
+          </button>
+        )}
+
+        {/* Language Toggle Button */}
+        {onToggleLanguage && (
+          <button
+            type="button"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
+            onClick={onToggleLanguage}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+              language === 'bn'
+                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25'
+                : 'bg-indigo-500/10 border-indigo-500/25 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-500/20'
+            }`}
+            title={language === 'bn' ? "Switch to English Typing" : "Switch to Bangla Avro (অভ্র)"}
+          >
+            <span>{language === 'bn' ? '🇧🇩 অভ্র' : '🇬🇧 En'}</span>
           </button>
         )}
       </div>

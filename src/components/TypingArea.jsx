@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Sparkles, Flame, Zap, Target, Image as ImageIcon, ImageOff, ArrowRight, RotateCcw, Smartphone } from 'lucide-react';
+import { transliterateAvro, checkAvroWordMatch } from '../utils/avroPhonetic';
 
 export default function TypingArea({
   targetText,
@@ -23,11 +24,31 @@ export default function TypingArea({
   hasNextLesson = true,
   onShowResults,
   onTypeChar,
-  onBackspace
+  onBackspace,
+  language = 'en',
+  currentLesson = null,
+  avroWordIndex = 0,
+  avroWordInput = '',
+  avroWordResults = []
 }) {
   const currentIdx = userInput.length;
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
   const textContainerRef = useRef(null);
+
+  // For Bangla Avro mode: target words with their phonetic hints
+  const avroTargetWords = useMemo(() => {
+    if (currentLesson?.words && currentLesson.words.length > 0) {
+      return currentLesson.words;
+    }
+    return targetText.split(' ').filter(Boolean).map((w) => ({ bangla: w, avro: '' }));
+  }, [currentLesson, targetText]);
+
+  const progressPercent = useMemo(() => {
+    if (language === 'bn') {
+      return Math.min(100, Math.round((avroWordIndex / Math.max(1, avroTargetWords.length)) * 100));
+    }
+    return Math.min(100, Math.round((currentIdx / Math.max(1, targetText.length)) * 100));
+  }, [language, avroWordIndex, avroTargetWords.length, currentIdx, targetText.length]);
 
   // Group characters into whole words so words NEVER split across lines
   const words = useMemo(() => {
@@ -121,9 +142,6 @@ export default function TypingArea({
       }
     }
   }, [currentIdx]);
-
-  // Progress percentage
-  const progressPercent = targetText.length > 0 ? Math.round((currentIdx / targetText.length) * 100) : 0;
 
   return (
     <div
@@ -222,26 +240,36 @@ export default function TypingArea({
 
       {/* Top Bar: Mobile Keyboard Status & Photo Toggle & Progress */}
       <div className="relative z-10 px-3 sm:px-8 pt-3 sm:pt-5 flex items-center justify-between gap-2">
-        {/* Left: Mobile phone keyboard prompt/status */}
-        <button
-          type="button"
-          tabIndex={-1}
-          onClick={(e) => {
-            e.stopPropagation();
-            hiddenInputRef.current?.focus();
-          }}
-          className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs border cursor-pointer active:scale-95 ${
-            isInputFocused
-              ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
-              : 'bg-indigo-600 border-indigo-500 text-white shadow-indigo-500/30 animate-pulse'
-          }`}
-          title="Tap to Open Phone Keyboard"
-        >
-          <Smartphone className="w-3.5 h-3.5" />
-          <span className="text-[11px] sm:text-xs">
-            {isInputFocused ? 'Keyboard Active' : 'Tap to Type'}
-          </span>
-        </button>
+        {/* Left: Mobile phone keyboard prompt & Avro mode indicator */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation();
+              hiddenInputRef.current?.focus();
+            }}
+            className={`px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs border cursor-pointer active:scale-95 ${
+              isInputFocused
+                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                : 'bg-indigo-600 border-indigo-500 text-white shadow-indigo-500/30 animate-pulse'
+            }`}
+            title="Tap to Open Phone Keyboard"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span className="text-[11px] sm:text-xs">
+              {isInputFocused ? 'Keyboard Active' : 'Tap to Type'}
+            </span>
+          </button>
+
+          {language === 'bn' && (
+            <div className="flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+              <span className="text-xs">🇧🇩</span>
+              <span className="font-mono">অভ্র</span>
+              <span className="hidden sm:inline text-[10px] opacity-75 font-normal ml-0.5">En ➔ বাংলা</span>
+            </div>
+          )}
+        </div>
 
         {/* Right side: Photo Toggle & Progress */}
         <div className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
@@ -291,12 +319,16 @@ export default function TypingArea({
       {/* ─── "Start Typing" Prompt ─── */}
       {!hasStarted && !isFinished && (
         <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-          <div className="flex flex-col items-center gap-3 animate-breathe">
+          <div className="flex flex-col items-center gap-3 animate-breathe text-center px-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/20 flex items-center justify-center shadow-lg shadow-indigo-500/10">
               <Zap className="w-7 h-7 text-indigo-400" />
             </div>
-            <span className="text-sm font-bold text-slate-400">Start Typing</span>
-            <span className="text-xs text-slate-600">Press any key to begin...</span>
+            <span className="text-sm font-bold text-slate-500 dark:text-slate-300">
+              {language === 'bn' ? 'টাইপ শুরু করুন (Start Typing)' : 'Start Typing'}
+            </span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {language === 'bn' ? 'ইংরেজি বর্ণে ফোনেটিক টাইপ করুন (যেমন: ami ➔ আমি)' : 'Press any key to begin...'}
+            </span>
           </div>
         </div>
       )}
@@ -356,72 +388,150 @@ export default function TypingArea({
 
       {/* ─── Main Text Display ─── */}
       <div ref={textContainerRef} className={`relative z-10 flex-1 flex items-center px-3.5 sm:px-10 py-4 sm:py-8 transition-opacity duration-300 ${!hasStarted ? 'opacity-70' : 'opacity-100'}`}>
-        <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-xl sm:text-2xl md:text-[34px] leading-[2.1] sm:leading-[2.4] tracking-wide w-full select-none">
-          {words.map((word, wordIndex) => (
-            <span key={wordIndex} className="inline-block whitespace-nowrap">
-              {word.map(({ char, index }) => {
-                const isCurrent = index === currentIdx;
-                const isTyped = index < currentIdx;
-                const isSpace = char === ' ';
+        {language === 'bn' ? (
+          <div className="font-['Hind_Siliguri',_'Inria_Sans',_sans-serif] text-2xl sm:text-3xl md:text-[36px] leading-[2.6] sm:leading-[3] tracking-wide w-full select-none flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-3">
+            {avroTargetWords.map((item, wIdx) => {
+              const isCurrent = wIdx === avroWordIndex;
+              const isTyped = wIdx < avroWordIndex;
+              const isCorrect = avroWordResults[wIdx]?.isCorrect !== false;
+              const targetBangla = item.bangla || item;
+              const phoneticHint = item.avro || '';
 
-                if (isTyped) {
-                  const typedChar = userInput[index];
-                  const isCorrect = typedChar === char;
-
-                  return (
-                    <span
-                      key={index}
-                      className={`inline transition-all duration-100 ${
-                        isCorrect
-                          ? isSpace
-                            ? 'bg-white/70 dark:bg-white/10 px-[1.5px] rounded-xs'
-                            : 'bg-white/85 dark:bg-white/15 text-[#24201A] dark:text-slate-100 rounded-xs px-[1px] shadow-[0_1px_1px_rgba(0,0,0,0.05)]'
-                          : isSpace
-                          ? 'bg-rose-200/80 dark:bg-rose-900/60 rounded-xs px-[1.5px]'
-                          : 'bg-rose-200/90 dark:bg-rose-900/70 text-rose-800 dark:text-rose-200 font-bold rounded-xs px-[1px] shadow-[0_1px_1px_rgba(225,29,72,0.15)]'
-                      }`}
-                    >
-                      {isSpace ? '\u00A0' : char}
-                    </span>
-                  );
-                }
-
-                if (isCurrent) {
-                  return (
-                    <span
-                      key={index}
-                      data-active="true"
-                      className={`relative inline font-medium rounded-xs transition-all ${
-                        isSpace
-                          ? 'bg-[#FDE047]/80 dark:bg-amber-400/80 px-[3px]'
-                          : 'bg-[#FDE047] dark:bg-amber-400 text-slate-950 px-[1.5px]'
-                      }`}
-                      style={{
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
-                      }}
-                    >
-                      {isSpace ? '\u00A0' : char}
-                      {/* Authentic TypingClub bright blue underline cursor */}
-                      <span
-                        className="absolute -bottom-[3.5px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#38BDF8] rounded-full shadow-[0_1px_3px_rgba(37,99,235,0.4)]"
-                      />
-                    </span>
-                  );
-                }
-
-                // Upcoming characters
+              if (isTyped) {
                 return (
                   <span
-                    key={index}
-                    className="inline transition-colors text-[#2C2720] dark:text-slate-200/85 px-[0.5px]"
+                    key={wIdx}
+                    className={`inline-flex flex-col items-center px-2.5 py-1 rounded-xl transition-all duration-100 ${
+                      isCorrect
+                        ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30'
+                        : 'bg-rose-500/20 text-rose-800 dark:text-rose-200 border border-rose-500/30'
+                    }`}
                   >
-                    {isSpace ? '\u00A0' : char}
+                    <span className="text-[10px] font-mono opacity-60 font-semibold">{phoneticHint}</span>
+                    <span className="font-bold">{targetBangla}</span>
                   </span>
                 );
-              })}
-            </span>
-          ))}
-        </div>
+              }
+
+              if (isCurrent) {
+                const liveConverted = transliterateAvro(avroWordInput);
+                const isMatch = checkAvroWordMatch(avroWordInput, targetBangla, phoneticHint);
+
+                return (
+                  <span
+                    key={wIdx}
+                    data-active="true"
+                    className="relative inline-flex flex-col items-center px-3 py-1 rounded-xl transition-all bg-[#FDE047] dark:bg-amber-400 text-slate-950 font-bold shadow-md"
+                  >
+                    {/* Phonetic guide pill above current word */}
+                    <span className="text-[11px] font-mono font-black text-slate-900/80 -mt-0.5 tracking-wider">
+                      {phoneticHint}
+                    </span>
+
+                    {/* Target Bangla word with active underline */}
+                    <span className="relative text-inherit font-extrabold text-2xl sm:text-3xl md:text-[36px]">
+                      {targetBangla}
+                      <span className="absolute -bottom-[3px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#1D4ED8] rounded-full shadow-sm" />
+                    </span>
+
+                    {/* Live Avro input preview pill below word */}
+                    <span className={`absolute -bottom-7 sm:-bottom-8 px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-mono font-bold whitespace-nowrap shadow-lg border z-30 transition-all ${
+                      isMatch
+                        ? 'bg-emerald-600 text-white border-emerald-400 animate-pulse'
+                        : 'bg-slate-900 text-amber-300 border-amber-500/40'
+                    }`}>
+                      {avroWordInput ? (
+                        <span>
+                          {avroWordInput} ➔ {liveConverted} {isMatch ? '✓ (Space)' : ''}
+                        </span>
+                      ) : (
+                        <span className="opacity-80">type: {phoneticHint}</span>
+                      )}
+                    </span>
+                  </span>
+                );
+              }
+
+              // Upcoming words
+              return (
+                <span
+                  key={wIdx}
+                  className="inline-flex flex-col items-center px-1.5 py-0.5 rounded-lg text-[#2C2720]/80 dark:text-slate-300/80 transition-colors"
+                >
+                  <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">{phoneticHint}</span>
+                  <span>{targetBangla}</span>
+                </span>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-xl sm:text-2xl md:text-[34px] leading-[2.1] sm:leading-[2.4] tracking-wide w-full select-none">
+            {words.map((word, wordIndex) => (
+              <span key={wordIndex} className="inline-block whitespace-nowrap">
+                {word.map(({ char, index }) => {
+                  const isCurrent = index === currentIdx;
+                  const isTyped = index < currentIdx;
+                  const isSpace = char === ' ';
+
+                  if (isTyped) {
+                    const typedChar = userInput[index];
+                    const isCorrect = typedChar === char;
+
+                    return (
+                      <span
+                        key={index}
+                        className={`inline transition-all duration-100 ${
+                          isCorrect
+                            ? isSpace
+                              ? 'bg-white/70 dark:bg-white/10 px-[1.5px] rounded-xs'
+                              : 'bg-white/85 dark:bg-white/15 text-[#24201A] dark:text-slate-100 rounded-xs px-[1px] shadow-[0_1px_1px_rgba(0,0,0,0.05)]'
+                            : isSpace
+                            ? 'bg-rose-200/80 dark:bg-rose-900/60 rounded-xs px-[1.5px]'
+                            : 'bg-rose-200/90 dark:bg-rose-900/70 text-rose-800 dark:text-rose-200 font-bold rounded-xs px-[1px] shadow-[0_1px_1px_rgba(225,29,72,0.15)]'
+                        }`}
+                      >
+                        {isSpace ? '\u00A0' : char}
+                      </span>
+                    );
+                  }
+
+                  if (isCurrent) {
+                    return (
+                      <span
+                        key={index}
+                        data-active="true"
+                        className={`relative inline font-medium rounded-xs transition-all ${
+                          isSpace
+                            ? 'bg-[#FDE047]/80 dark:bg-amber-400/80 px-[3px]'
+                            : 'bg-[#FDE047] dark:bg-amber-400 text-slate-950 px-[1.5px]'
+                        }`}
+                        style={{
+                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
+                        }}
+                      >
+                        {isSpace ? '\u00A0' : char}
+                        {/* Authentic TypingClub bright blue underline cursor */}
+                        <span
+                          className="absolute -bottom-[3.5px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#38BDF8] rounded-full shadow-[0_1px_3px_rgba(37,99,235,0.4)]"
+                        />
+                      </span>
+                    );
+                  }
+
+                  // Upcoming characters
+                  return (
+                    <span
+                      key={index}
+                      className="inline transition-colors text-[#2C2720] dark:text-slate-200/85 px-[0.5px]"
+                    >
+                      {isSpace ? '\u00A0' : char}
+                    </span>
+                  );
+                })}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ─── Bottom Status Bar ─── */}
