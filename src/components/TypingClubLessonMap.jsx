@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown, Image as ImageIcon, ImageOff } from 'lucide-react';
+import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown, Image as ImageIcon, ImageOff, Share2 } from 'lucide-react';
 import { LESSON_STAGES, ALL_685_LESSONS } from '../data/lessons';
 import ThemeToggle from './ThemeToggle';
 
@@ -180,7 +180,8 @@ export default function TypingClubLessonMap({
   isDark,
   onToggleTheme,
   showTierPhotos = true,
-  onToggleTierPhotos
+  onToggleTierPhotos,
+  onShareLesson
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedStages, setCollapsedStages] = useState({});
@@ -317,6 +318,19 @@ export default function TypingClubLessonMap({
                   <span className="hidden sm:inline">Photos: <span className="text-rose-500 dark:text-rose-400 font-black">OFF</span></span>
                 </>
               )}
+            </button>
+          )}
+
+          {/* Share Current Lesson Link */}
+          {onShareLesson && (
+            <button
+              onClick={() => onShareLesson({ number: currentLessonNumber, title: `Lesson ${currentLessonNumber}` })}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold glass-light border border-slate-300/60 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 cursor-pointer shadow-xs active:scale-95"
+              title={`Share direct link for Lesson ${currentLessonNumber}`}
+              aria-label="Share Current Lesson"
+            >
+              <Share2 className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+              <span className="hidden sm:inline">Share L{currentLessonNumber}</span>
             </button>
           )}
 
@@ -514,11 +528,25 @@ export default function TypingClubLessonMap({
                           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-shift" />
                         )}
 
-                        {/* Lesson number */}
-                        <div className="pt-3.5 pl-3.5 pb-1">
+                        {/* Lesson number and Quick Share */}
+                        <div className="pt-3.5 pl-3.5 pr-3 pb-1 flex items-center justify-between">
                           <span className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: theme.accent }}>
                             {lesson.number}
                           </span>
+                          {onShareLesson && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onShareLesson(lesson);
+                              }}
+                              className="w-7 h-7 rounded-lg glass-light bg-black/15 dark:bg-white/10 hover:bg-indigo-600 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-xs hover:scale-110 active:scale-95 z-20"
+                              title={`Copy share link for Lesson ${lesson.number}`}
+                              aria-label={`Share Lesson ${lesson.number}`}
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
 
                         {/* Center graphic (Bigger SVG) */}

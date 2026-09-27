@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { ArrowRight, RotateCcw, ChevronDown, Star, Trophy, Zap, Target, Clock, Flame, Sparkles, X } from 'lucide-react';
+import { ArrowRight, RotateCcw, ChevronDown, Star, Trophy, Zap, Target, Clock, Flame, Sparkles, X, Share2 } from 'lucide-react';
 import { BEAUTY_TIERS } from '../data/lessons';
 
 // Animated circular gauge
@@ -120,7 +120,8 @@ export default function ResultsModal({
   onBackToLessons,
   currentTier,
   customAvatars = {},
-  showTierPhotos = true
+  showTierPhotos = true,
+  onShareLesson
 }) {
   if (!isOpen) return null;
 
@@ -236,6 +237,17 @@ export default function ResultsModal({
 
         {/* Top-Right Quick Action Buttons */}
         <div className="flex items-center gap-2">
+          {onShareLesson && (
+            <button
+              onClick={() => onShareLesson(currentLesson, { wpm, accuracy })}
+              className="px-3 py-1.5 glass-light hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:text-indigo-400 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+              title="Share Lesson Link & Score"
+            >
+              <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+          )}
+
           <button
             onClick={onRestart}
             className="px-3 py-1.5 glass-light hover:bg-white/10 text-slate-700 dark:text-slate-300 hover:text-emerald-500 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
@@ -382,6 +394,17 @@ export default function ResultsModal({
             <span>Try Again</span>
             <span className="text-[10px] font-mono font-semibold opacity-75 hidden sm:inline px-1.5 py-0.5 rounded bg-white/20">R</span>
           </button>
+
+          {onShareLesson && (
+            <button
+              onClick={() => onShareLesson(currentLesson, { wpm, accuracy })}
+              className="py-3.5 px-5 glass-card hover:bg-indigo-500/20 text-slate-200 hover:text-white font-extrabold rounded-2xl text-base border border-white/15 hover:border-indigo-500/40 shadow-xl shadow-indigo-500/10 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+              title="Share Lesson Link & Score"
+            >
+              <Share2 className="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" />
+              <span>Share Score</span>
+            </button>
+          )}
         </div>
 
         {/* Circular Gauges */}

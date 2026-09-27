@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, ImageOff, Zap, Target, Flame, ArrowLeft, Sparkles } from 'lucide-react';
+import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, ImageOff, Zap, Target, Flame, ArrowLeft, Sparkles, Share2, Link2 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 export default function TypingClubHeader({
@@ -22,7 +22,8 @@ export default function TypingClubHeader({
   onToggleTheme,
   customAvatars = {},
   showTierPhotos = true,
-  onToggleTierPhotos
+  onToggleTierPhotos,
+  onShareLesson
 }) {
   const activeAvatar = customAvatars[currentTier.tier] || currentTier.avatar;
 
@@ -60,6 +61,22 @@ export default function TypingClubHeader({
             </span>
           </div>
         </div>
+
+        {/* Quick Share Lesson Button */}
+        {onShareLesson && (
+          <button
+            type="button"
+            tabIndex={-1}
+            onFocus={(e) => e.currentTarget.blur()}
+            onClick={() => onShareLesson()}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl glass-light hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 border border-transparent hover:border-indigo-500/30 transition-all text-xs font-bold cursor-pointer"
+            title={`Copy Shareable Link for Lesson ${lessonNumber}`}
+            aria-label="Share Lesson Link"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Share</span>
+          </button>
+        )}
       </div>
 
       {/* Center / Right: Live Performance & Tools */}

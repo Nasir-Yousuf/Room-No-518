@@ -6,6 +6,8 @@ import VirtualKeyboard from './components/VirtualKeyboard';
 import ResultsModal from './components/ResultsModal';
 import TypingClubLessonMap from './components/TypingClubLessonMap';
 import CustomAvatarModal from './components/CustomAvatarModal';
+import ShareToast from './components/ShareToast';
+import { getLessonFromUrl, getShareUrl, shareLesson } from './utils/shareUtils';
 import {
   playKeyClick,
   playErrorSound,
@@ -16,11 +18,22 @@ import {
 } from './audio';
 
 export default function App() {
-  // Navigation View: 'lessons' (Typing Club 500 curriculum page by default) | 'typing' (main typing arena)
-  const [currentView, setCurrentView] = useState('lessons');
+  // Check URL on startup for deep links (e.g. ?lesson=183 or #lesson-183)
+  const initialUrlLesson = useRef(getLessonFromUrl(ALL_685_LESSONS)).current;
 
-  // Initialize current lesson with persistence in localStorage
+  // Navigation View: 'lessons' (Typing Club curriculum page by default) | 'typing' (main typing arena)
+  const [currentView, setCurrentView] = useState(() => {
+    if (initialUrlLesson) return 'typing';
+    try {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('view') === 'typing') return 'typing';
+    } catch {}
+    return 'lessons';
+  });
+
+  // Initialize current lesson with URL deep link or persistence in localStorage
   const [currentLesson, setCurrentLesson] = useState(() => {
+    if (initialUrlLesson) return initialUrlLesson;
     try {
       const savedNum = localStorage.getItem('glowtype_current_lesson');
       if (savedNum) {
@@ -33,6 +46,10 @@ export default function App() {
   });
 
   const [currentLessonIndex, setCurrentLessonIndex] = useState(() => {
+    if (initialUrlLesson) {
+      const idx = ALL_685_LESSONS.findIndex((l) => l.number === initialUrlLesson.number);
+      if (idx !== -1) return idx;
+    }
     try {
       const savedNum = localStorage.getItem('glowtype_current_lesson');
       if (savedNum) {
@@ -160,6 +177,60 @@ export default function App() {
   const [showHands, setShowHands] = useState(true);
   const [activeKey, setActiveKey] = useState('');
   const [soundOn, setSoundOn] = useState(true);
+
+  // Share Toast notification state
+  const [shareToast, setShareToast] = useState(null);
+
+  // Synchronize URL query params (?lesson=183 or ?view=lessons) without reloading
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (currentView === 'typing' && currentLesson?.number) {
+        url.searchParams.set('lesson', String(currentLesson.number));
+        url.searchParams.delete('view');
+      } else if (currentView === 'lessons') {
+        url.searchParams.delete('lesson');
+        url.searchParams.set('view', 'lessons');
+      }
+      window.history.replaceState({ lesson: currentLesson?.number, view: currentView }, '', url.toString());
+    } catch {}
+  }, [currentView, currentLesson]);
+
+  // Support Browser Back/Forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      const lessonFromUrl = getLessonFromUrl(ALL_685_LESSONS);
+      if (lessonFromUrl) {
+        setCurrentLesson(lessonFromUrl);
+        setTargetText(lessonFromUrl.text);
+        const idx = ALL_685_LESSONS.findIndex((l) => l.number === lessonFromUrl.number);
+        if (idx !== -1) setCurrentLessonIndex(idx);
+        setCurrentView('typing');
+      } else {
+        try {
+          const url = new URL(window.location.href);
+          if (url.searchParams.get('view') === 'lessons') {
+            setCurrentView('lessons');
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Share Lesson handler
+  const handleShareLesson = useCallback((lessonToShare, stats) => {
+    const target = lessonToShare || currentLesson;
+    if (!target) return;
+    shareLesson({
+      lessonNumber: target.number,
+      lessonTitle: target.title,
+      wpm: stats?.wpm,
+      accuracy: stats?.accuracy,
+      onToast: (toastData) => setShareToast(toastData)
+    });
+  }, [currentLesson]);
 
   // Custom Avatars stored in localStorage
   const [customAvatars, setCustomAvatars] = useState(() => {
@@ -472,21 +543,25 @@ export default function App() {
   // If in Lessons Map View, render the full-screen Typing Club Curriculum Page
   if (currentView === 'lessons') {
     return (
-      <TypingClubLessonMap
-        currentLessonNumber={currentLesson.number}
-        onSelectLesson={handleSelectLesson}
-        onBackToTyping={() => {
-          if (currentLesson?.text) {
-            setTargetText(currentLesson.text);
-          }
-          setCurrentView('typing');
-        }}
-        completedStars={completedStars}
-        isDark={isDark}
-        onToggleTheme={toggleTheme}
-        showTierPhotos={showTierPhotos}
-        onToggleTierPhotos={toggleTierPhotos}
-      />
+      <>
+        <TypingClubLessonMap
+          currentLessonNumber={currentLesson.number}
+          onSelectLesson={handleSelectLesson}
+          onBackToTyping={() => {
+            if (currentLesson?.text) {
+              setTargetText(currentLesson.text);
+            }
+            setCurrentView('typing');
+          }}
+          completedStars={completedStars}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+          showTierPhotos={showTierPhotos}
+          onToggleTierPhotos={toggleTierPhotos}
+          onShareLesson={handleShareLesson}
+        />
+        <ShareToast toast={shareToast} onClose={() => setShareToast(null)} />
+      </>
     );
   }
 
@@ -530,6 +605,7 @@ export default function App() {
         customAvatars={customAvatars}
         showTierPhotos={showTierPhotos}
         onToggleTierPhotos={toggleTierPhotos}
+        onShareLesson={handleShareLesson}
       />
 
       {/* Main Typing Arena */}
@@ -592,6 +668,7 @@ export default function App() {
         currentTier={currentTier}
         customAvatars={customAvatars}
         showTierPhotos={showTierPhotos}
+        onShareLesson={handleShareLesson}
       />
 
       <CustomAvatarModal
@@ -601,6 +678,9 @@ export default function App() {
         onUpdateAvatar={handleUpdateAvatar}
         onResetAvatars={handleResetAvatars}
       />
+
+      {/* Share Toast Notification */}
+      <ShareToast toast={shareToast} onClose={() => setShareToast(null)} />
     </div>
   );
 }
