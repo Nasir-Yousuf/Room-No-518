@@ -9,7 +9,15 @@ import ResultsModal from './components/ResultsModal';
 import TypingClubLessonMap from './components/TypingClubLessonMap';
 import CustomAvatarModal from './components/CustomAvatarModal';
 import ShareToast from './components/ShareToast';
+import WeaknessWorkoutBar from './components/WeaknessWorkoutBar';
 import { getLessonFromUrl, getShareUrl, shareLesson } from './utils/shareUtils';
+import {
+  loadWeaknessProfile,
+  saveWeaknessProfile,
+  recordKeystroke,
+  recordWordCompleted,
+  generateWeaknessWorkout
+} from './utils/weaknessAnalyzer';
 import {
   playKeyClick,
   playErrorSound,
@@ -19,7 +27,11 @@ import {
   setSoundEnabled
 } from './audio';
 
-export function getLessonTargetText(lesson, lang) {
+export function getLessonTargetText(lesson, lang, currentWorkout = null) {
+  if (lang === 'weakness') {
+    if (currentWorkout?.text) return currentWorkout.text;
+    if (lesson?.text) return lesson.text;
+  }
   if (!lesson) return ALL_685_LESSONS[0].text;
   if (lang === 'bn') {
     if (lesson.words && lesson.words.length > 0) {
@@ -31,11 +43,11 @@ export function getLessonTargetText(lesson, lang) {
 }
 
 export default function App() {
-  // Language mode: 'en' (English) | 'bn' (Bangla Avro)
+  // Language mode: 'en' (English) | 'bn' (Bangla Avro) | 'weakness' (Weakness AI)
   const [language, setLanguage] = useState(() => {
     try {
       const saved = localStorage.getItem('glowtype_language');
-      if (saved === 'bn' || saved === 'en') return saved;
+      if (saved === 'bn' || saved === 'en' || saved === 'weakness') return saved;
     } catch {}
     return 'en';
   });
@@ -77,6 +89,19 @@ export default function App() {
   });
 
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+
+  // Weakness AI Profiler & Adaptive Paragraph Workout state
+  const weaknessProfileRef = useRef(loadWeaknessProfile());
+  const lastKeystrokeTimeRef = useRef(null);
+  const currentWordBufferRef = useRef({ word: '', startTime: null, errors: 0 });
+  const [workoutLength, setWorkoutLength] = useState('medium');
+  const [weaknessWorkout, setWeaknessWorkout] = useState(() => {
+    return generateWeaknessWorkout({
+      profile: weaknessProfileRef.current,
+      length: 'medium',
+      mode: 'adaptive'
+    });
+  });
 
   const currentLessonRef = useRef(currentLesson);
   useEffect(() => {
@@ -159,10 +184,10 @@ export default function App() {
   // Sync targetText whenever currentLesson changes, language switches, or typing view opens
   useEffect(() => {
     if (currentLesson) {
-      const nextTarget = getLessonTargetText(currentLesson, language);
+      const nextTarget = getLessonTargetText(currentLesson, language, weaknessWorkout);
       setTargetText(nextTarget);
     }
-  }, [currentLesson, language]);
+  }, [currentLesson, language, weaknessWorkout]);
 
   useEffect(() => {
     if (currentView === 'typing') {
@@ -170,13 +195,13 @@ export default function App() {
         document.activeElement.blur();
       }
       if (currentLesson) {
-        const expected = getLessonTargetText(currentLesson, language);
+        const expected = getLessonTargetText(currentLesson, language, weaknessWorkout);
         if (targetText !== expected) {
           setTargetText(expected);
         }
       }
     }
-  }, [currentView, currentLesson, language, targetText]);
+  }, [currentView, currentLesson, language, targetText, weaknessWorkout]);
 
   // Time & Metrics
   const [_startTime, setStartTime] = useState(null);
@@ -330,7 +355,83 @@ export default function App() {
     recentKeystrokes.current = [];
     errorPenaltyUntil.current = 0;
     prevTierRef.current = 3;
+    lastKeystrokeTimeRef.current = null;
+    currentWordBufferRef.current = { word: '', startTime: null, errors: 0 };
   }, [currentLesson, gameMode, language]);
+
+  // Generate a brand new paragraph targeting weak fingers/letters/words
+  // "based on the weakness of our word it will give new words not new letter please"
+  const handleGenerateWeaknessParagraph = useCallback((options = {}) => {
+    const len = options.length || workoutLength;
+    const fresh = generateWeaknessWorkout({
+      profile: weaknessProfileRef.current,
+      length: len,
+      mode: options.mode || 'adaptive',
+      focusFinger: options.focusFinger || null
+    });
+    setWeaknessWorkout(fresh);
+    const adaptiveLesson = {
+      id: fresh.id,
+      number: '🎯',
+      title: fresh.title,
+      targetWpm: 35,
+      difficulty: 'Adaptive',
+      text: fresh.text,
+      isWeaknessWorkout: true,
+      targetFingers: fresh.targetFingers,
+      targetWords: fresh.targetWords
+    };
+    setCurrentLesson(adaptiveLesson);
+    currentLessonRef.current = adaptiveLesson;
+    setTargetText(fresh.text);
+    setUserInput('');
+    setGlamourScore(55);
+    setCombo(0);
+    setPeakCombo(0);
+    setTotalErrors(0);
+    setStartTime(null);
+    setElapsedTime(0);
+    setWpm(0);
+    setAccuracy(100);
+    setHasStarted(false);
+    setIsPaused(false);
+    setIsFinished(false);
+    setShowResults(false);
+    recentKeystrokes.current = [];
+    errorPenaltyUntil.current = 0;
+    prevTierRef.current = 3;
+    lastKeystrokeTimeRef.current = null;
+    currentWordBufferRef.current = { word: '', startTime: null, errors: 0 };
+  }, [workoutLength]);
+
+  // Start a Weakness Workout from the Hub
+  const handleStartWeaknessWorkout = useCallback((workout) => {
+    const fresh = workout || generateWeaknessWorkout({
+      profile: weaknessProfileRef.current,
+      length: workoutLength,
+      mode: 'adaptive'
+    });
+    setWeaknessWorkout(fresh);
+    const adaptiveLesson = {
+      id: fresh.id,
+      number: '🎯',
+      title: fresh.title,
+      targetWpm: 35,
+      difficulty: 'Adaptive',
+      text: fresh.text,
+      isWeaknessWorkout: true,
+      targetFingers: fresh.targetFingers,
+      targetWords: fresh.targetWords
+    };
+    setCurrentLesson(adaptiveLesson);
+    currentLessonRef.current = adaptiveLesson;
+    setLanguage('weakness');
+    try {
+      localStorage.setItem('glowtype_language', 'weakness');
+    } catch {}
+    resetGame(adaptiveLesson, gameMode, 'weakness');
+    setCurrentView('typing');
+  }, [workoutLength, gameMode, resetGame]);
 
   // Language switcher handler
   const handleSelectLanguage = (newLang) => {
@@ -338,10 +439,36 @@ export default function App() {
     setLanguage(newLang);
     try {
       localStorage.setItem('glowtype_language', newLang);
-      const starsKey = newLang === 'bn' ? 'glowtype_lesson_stars_bn' : 'glowtype_lesson_stars';
-      const savedStars = localStorage.getItem(starsKey);
-      setCompletedStars(savedStars ? JSON.parse(savedStars) : {});
+      if (newLang !== 'weakness') {
+        const starsKey = newLang === 'bn' ? 'glowtype_lesson_stars_bn' : 'glowtype_lesson_stars';
+        const savedStars = localStorage.getItem(starsKey);
+        setCompletedStars(savedStars ? JSON.parse(savedStars) : {});
+      }
     } catch {}
+
+    if (newLang === 'weakness') {
+      const fresh = generateWeaknessWorkout({
+        profile: weaknessProfileRef.current,
+        length: workoutLength,
+        mode: 'adaptive'
+      });
+      setWeaknessWorkout(fresh);
+      const adaptiveLesson = {
+        id: fresh.id,
+        number: '🎯',
+        title: fresh.title,
+        targetWpm: 35,
+        difficulty: 'Adaptive',
+        text: fresh.text,
+        isWeaknessWorkout: true,
+        targetFingers: fresh.targetFingers,
+        targetWords: fresh.targetWords
+      };
+      setCurrentLesson(adaptiveLesson);
+      currentLessonRef.current = adaptiveLesson;
+      resetGame(adaptiveLesson, gameMode, newLang);
+      return;
+    }
 
     const list = newLang === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
     const targetLesson = list[0];
@@ -352,7 +479,9 @@ export default function App() {
   };
 
   const toggleLanguage = () => {
-    handleSelectLanguage(language === 'bn' ? 'en' : 'bn');
+    if (language === 'en') handleSelectLanguage('bn');
+    else if (language === 'bn') handleSelectLanguage('weakness');
+    else handleSelectLanguage('en');
   };
 
   // Inject Typing Club SVG Sprite on initial mount for instant zero-latency vector rendering
@@ -388,6 +517,10 @@ export default function App() {
   };
 
   const handleNextLesson = () => {
+    if (language === 'weakness') {
+      handleGenerateWeaknessParagraph();
+      return;
+    }
     const list = language === 'bn' ? ALL_BANGLA_LESSONS : ALL_685_LESSONS;
     const currentNum = currentLessonRef.current?.number || currentLesson?.number || 1;
     const nextLesson = list.find((l) => l.number === currentNum + 1) || list[0];
@@ -490,6 +623,19 @@ export default function App() {
     if (glamourScore >= 75) {
       playGlamourUp();
     }
+
+    // Persist completed word & updated weakness profile
+    if (currentWordBufferRef.current.word.trim()) {
+      const now = Date.now();
+      recordWordCompleted(
+        weaknessProfileRef.current,
+        currentWordBufferRef.current.word,
+        now - (currentWordBufferRef.current.startTime || now),
+        currentWordBufferRef.current.errors
+      );
+      currentWordBufferRef.current = { word: '', startTime: null, errors: 0 };
+    }
+    saveWeaknessProfile(weaknessProfileRef.current);
   };
 
   // Direct Window Keyboard Listener (Active when in typing view)
@@ -510,9 +656,33 @@ export default function App() {
     const expectedChar = targetText[userInput.length];
     if (expectedChar === undefined) return;
 
+    // Keystroke latency tracking
+    const latency = lastKeystrokeTimeRef.current ? Math.min(now - lastKeystrokeTimeRef.current, 2500) : 200;
+    lastKeystrokeTimeRef.current = now;
+
     // In Bangla mode, accept case-insensitive match (e.g. mobile keyboards auto-capitalizing first letter)
     const isCorrect = (charTyped === expectedChar) ||
       (language === 'bn' && typeof expectedChar === 'string' && charTyped.toLowerCase() === expectedChar.toLowerCase());
+
+    // Record into Weakness Profile
+    recordKeystroke(weaknessProfileRef.current, expectedChar, charTyped, isCorrect, latency);
+
+    // Track active word metrics
+    if (!currentWordBufferRef.current.startTime) {
+      currentWordBufferRef.current.startTime = now;
+    }
+    currentWordBufferRef.current.word += expectedChar;
+    if (!isCorrect) {
+      currentWordBufferRef.current.errors += 1;
+    }
+
+    if (expectedChar === ' ' || userInput.length + 1 >= targetText.length) {
+      const wStats = currentWordBufferRef.current;
+      if (wStats.word.trim()) {
+        recordWordCompleted(weaknessProfileRef.current, wStats.word, now - (wStats.startTime || now), wStats.errors);
+      }
+      currentWordBufferRef.current = { word: '', startTime: null, errors: 0 };
+    }
 
     if (isCorrect) {
       playKeyClick(charTyped === ' ');
@@ -602,6 +772,15 @@ export default function App() {
         return;
       }
 
+      // Tab key shortcut in Weakness mode generates a brand new paragraph
+      if (e.key === 'Tab') {
+        if (language === 'weakness') {
+          e.preventDefault();
+          handleGenerateWeaknessParagraph();
+          return;
+        }
+      }
+
       if (e.key.length === 1) {
         if (e.key === ' ') {
           e.preventDefault();
@@ -620,7 +799,7 @@ export default function App() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [currentView, showAvatarModal, showResults, isFinished, handleCharTyped, handleBackspace]);
+  }, [currentView, showAvatarModal, showResults, isFinished, handleCharTyped, handleBackspace, language, handleGenerateWeaknessParagraph]);
 
   const currentTargetChar = useMemo(() => {
     return targetText[userInput.length] || '';
@@ -651,6 +830,7 @@ export default function App() {
           onShareLesson={handleShareLesson}
           language={language}
           onSelectLanguage={handleSelectLanguage}
+          onStartWeaknessWorkout={handleStartWeaknessWorkout}
         />
         <ShareToast toast={shareToast} onClose={() => setShareToast(null)} />
       </>
@@ -700,10 +880,25 @@ export default function App() {
         onShareLesson={handleShareLesson}
         language={language}
         onToggleLanguage={toggleLanguage}
+        onSelectLanguage={handleSelectLanguage}
       />
 
       {/* Main Typing Arena */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-3 sm:p-6 flex flex-col justify-between gap-3 relative z-10">
+        {/* Weakness Workout Bar when in Weakness mode */}
+        {language === 'weakness' && (
+          <WeaknessWorkoutBar
+            currentWorkout={weaknessWorkout}
+            onGenerateNewParagraph={handleGenerateWeaknessParagraph}
+            onOpenHub={() => setCurrentView('lessons')}
+            workoutLength={workoutLength}
+            onChangeLength={(len) => {
+              setWorkoutLength(len);
+              handleGenerateWeaknessParagraph({ length: len });
+            }}
+          />
+        )}
+
         {/* Typing Area */}
         <TypingArea
           targetText={targetText}
@@ -724,10 +919,11 @@ export default function App() {
           onOpenCustomPhotos={() => setShowAvatarModal(true)}
           onRestart={() => resetGame()}
           onNextLesson={handleNextLesson}
-          hasNextLesson={currentLesson.number < activeLessons.length}
+          hasNextLesson={language === 'weakness' ? true : currentLesson.number < activeLessons.length}
           onShowResults={() => setShowResults(true)}
           onTypeChar={handleCharTyped}
           onBackspace={handleBackspace}
+          onTab={language === 'weakness' ? handleGenerateWeaknessParagraph : undefined}
           language={language}
           currentLesson={currentLesson}
         />

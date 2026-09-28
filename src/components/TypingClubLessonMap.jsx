@@ -3,6 +3,7 @@ import { Search, ChevronUp, ChevronDown, Trophy, Zap, Star, ArrowRight, Crown, I
 import { LESSON_STAGES, ALL_685_LESSONS } from '../data/lessons';
 import { BANGLA_STAGES, ALL_BANGLA_LESSONS } from '../data/banglaLessons';
 import ThemeToggle from './ThemeToggle';
+import WeaknessHub from './WeaknessHub';
 
 // Helper component to render icons directly from Typing Club's official svgsprite-cmn.svg
 function SpriteIcon({ id, className = "w-[80px] h-[80px] sm:w-[94px] sm:h-[94px]" }) {
@@ -184,7 +185,8 @@ export default function TypingClubLessonMap({
   onToggleTierPhotos,
   onShareLesson,
   language = 'en',
-  onSelectLanguage
+  onSelectLanguage,
+  onStartWeaknessWorkout
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedStages, setCollapsedStages] = useState({});
@@ -263,7 +265,11 @@ export default function TypingClubLessonMap({
           <div>
             <h1 className="text-lg sm:text-xl font-black tracking-tight gradient-text">room-no-518</h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold -mt-0.5">
-              {language === 'bn' ? 'অভ্র ফোনেটিক • ৮০ Lessons' : 'Typing Club • 685 Lessons'}
+              {language === 'weakness'
+                ? 'Adaptive Weakness AI • Smart Paragraphs'
+                : language === 'bn'
+                ? 'অভ্র ফোনেটিক • ৮০ Lessons'
+                : 'Typing Club • 685 Lessons'}
             </p>
           </div>
         </div>
@@ -297,6 +303,20 @@ export default function TypingClubLessonMap({
           >
             <span>🇧🇩 বাংলা অভ্র</span>
             <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold">New</span>
+          </button>
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={() => onSelectLanguage && onSelectLanguage('weakness')}
+            className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              language === 'weakness'
+                ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white shadow-md shadow-rose-500/25'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+            title="Weak Fingers & Words Adaptive AI Workout"
+          >
+            <span>🎯 Weakness AI</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold hidden sm:inline">Adaptive</span>
           </button>
         </div>
 
@@ -401,76 +421,92 @@ export default function TypingClubLessonMap({
         </div>
       </header>
 
-      {/* ─── Progress Overview Banner ─── */}
-      <div className="w-full px-4 sm:px-8 py-4">
-        <div className="max-w-6xl mx-auto glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 via-purple-600/5 to-pink-600/5" />
+      {/* ─── Conditional View: Weakness AI Hub vs Curriculum Stages ─── */}
+      {language === 'weakness' ? (
+        <main className="flex-1 max-w-6xl w-full mx-auto px-2 sm:px-6 pb-12 relative z-10">
+          <WeaknessHub
+            onStartWorkout={(workout) => {
+              if (onStartWeaknessWorkout) {
+                onStartWeaknessWorkout(workout);
+              } else {
+                onBackToTyping();
+              }
+            }}
+            isDark={isDark}
+          />
+        </main>
+      ) : (
+        <>
+          {/* ─── Progress Overview Banner ─── */}
+          <div className="w-full px-4 sm:px-8 py-4">
+            <div className="max-w-6xl mx-auto glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/5 via-purple-600/5 to-pink-600/5" />
 
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-2" style={{ color: 'var(--text-heading)' }}>
-                <Trophy className="w-6 h-6 text-amber-400" />
-                Your Journey
-              </h2>
-              <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                {totalCompleted === 0
-                  ? 'Begin your typing adventure! Start with Lesson 1.'
-                  : `${totalCompleted} of 685 lessons completed • Keep going!`}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Circular Progress */}
-              <div className="relative w-16 h-16">
-                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="rgba(99, 102, 241, 0.15)"
-                    strokeWidth="3"
-                  />
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="url(#progressGrad)"
-                    strokeWidth="3"
-                    strokeDasharray={`${progressPercent}, 100`}
-                    strokeLinecap="round"
-                    className="transition-all duration-1000"
-                  />
-                  <defs>
-                    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#6366f1" />
-                      <stop offset="100%" stopColor="#a78bfa" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-base sm:text-lg font-black" style={{ color: 'var(--text-heading)' }}>{progressPercent}%</span>
+              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-2" style={{ color: 'var(--text-heading)' }}>
+                    <Trophy className="w-6 h-6 text-amber-400" />
+                    Your Journey
+                  </h2>
+                  <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                    {totalCompleted === 0
+                      ? 'Begin your typing adventure! Start with Lesson 1.'
+                      : `${totalCompleted} of 685 lessons completed • Keep going!`}
+                  </p>
                 </div>
-              </div>
 
-              {/* Progress Bar */}
-              <div className="hidden sm:block w-52">
-                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-bold">
-                  <span>{totalCompleted} lessons</span>
-                  <span>685 total</span>
-                </div>
-                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 relative"
-                    style={{ width: `${progressPercent}%` }}
-                  >
-                    <div className="absolute inset-0 bg-white/20 animate-shimmer rounded-full" style={{ width: '60%' }} />
+                <div className="flex items-center gap-4">
+                  {/* Circular Progress */}
+                  <div className="relative w-16 h-16">
+                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="rgba(99, 102, 241, 0.15)"
+                        strokeWidth="3"
+                      />
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="url(#progressGrad)"
+                        strokeWidth="3"
+                        strokeDasharray={`${progressPercent}, 100`}
+                        strokeLinecap="round"
+                        className="transition-all duration-1000"
+                      />
+                      <defs>
+                        <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#6366f1" />
+                          <stop offset="100%" stopColor="#a78bfa" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-base sm:text-lg font-black" style={{ color: 'var(--text-heading)' }}>{progressPercent}%</span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="hidden sm:block w-52">
+                    <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-bold">
+                      <span>{totalCompleted} lessons</span>
+                      <span>685 total</span>
+                    </div>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 relative"
+                        style={{ width: `${progressPercent}%` }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 animate-shimmer rounded-full" style={{ width: '60%' }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      {/* ─── Main Stages & Lesson Grid ─── */}
-      <main ref={mainRef} className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 pb-12 relative z-10">
+          {/* ─── Main Stages & Lesson Grid ─── */}
+          <main ref={mainRef} className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 pb-12 relative z-10">
         {stagesWithLessons.map((stage, stageIdx) => {
           const theme = STAGE_THEMES[stage.id] || STAGE_THEMES[1];
           const stageCompleted = stage.lessons?.filter(l => completedStars[l.number]).length || 0;
@@ -666,6 +702,8 @@ export default function TypingClubLessonMap({
           <ChevronDown className="w-5 h-5 stroke-[2.5]" />
         </button>
       </aside>
+    </>
+  )}
     </div>
   );
 }

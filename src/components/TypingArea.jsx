@@ -24,6 +24,7 @@ export default function TypingArea({
   onShowResults,
   onTypeChar,
   onBackspace,
+  onTab,
   language = 'en',
   currentLesson = null
 }) {
@@ -135,6 +136,11 @@ export default function TypingArea({
   const handleInputKeyDown = (e) => {
     if (e.key === 'Backspace') {
       triggerBackspace();
+    } else if (e.key === 'Tab') {
+      if (onTab) {
+        e.preventDefault();
+        onTab();
+      }
     }
   };
 
@@ -533,8 +539,20 @@ export default function TypingArea({
           </div>
         ) : (
           <div className="font-['Gabriela',_'Kurale',_Georgia,_serif] text-xl sm:text-2xl md:text-[34px] leading-[2.1] sm:leading-[2.4] tracking-wide w-full select-none">
-            {words.map((word, wordIndex) => (
-              <span key={wordIndex} className="inline-block whitespace-nowrap">
+            {words.map((word, wordIndex) => {
+              const cleanWordText = word.map((w) => w.char).join('').trim().toLowerCase().replace(/[^a-z]/g, '');
+              const isTargetWeakWord = language === 'weakness' && currentLesson?.targetWords && currentLesson.targetWords.includes(cleanWordText);
+
+              return (
+                <span
+                  key={wordIndex}
+                  className={`inline-block whitespace-nowrap transition-all duration-200 ${
+                    isTargetWeakWord
+                      ? 'border-b-2 border-dashed border-amber-500/50 dark:border-amber-400/50 rounded-xs'
+                      : ''
+                  }`}
+                  title={isTargetWeakWord ? '🎯 Target Word to overcome weakness' : undefined}
+                >
                 {word.map(({ char, index }) => {
                   const isCurrent = index === currentIdx;
                   const isTyped = index < currentIdx;
@@ -596,7 +614,8 @@ export default function TypingArea({
                   );
                 })}
               </span>
-            ))}
+            );
+          })}
           </div>
         )}
       </div>

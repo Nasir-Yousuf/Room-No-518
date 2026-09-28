@@ -227,7 +227,7 @@ export default function ResultsModal({
             <X className="w-4 h-4" />
           </button>
           <h1 className="text-sm sm:text-base font-bold" style={{ color: 'var(--text-heading)' }}>
-            Lesson {currentLesson.number}: {currentLesson.title}
+            {currentLesson.isWeaknessWorkout ? `🎯 ${currentLesson.title}` : `Lesson ${currentLesson.number}: ${currentLesson.title}`}
           </h1>
         </div>
 
@@ -256,10 +256,10 @@ export default function ResultsModal({
           {hasNextLesson ? (
             <button
               onClick={onNextLesson}
-              className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-indigo-500/20 active:scale-95"
-              title="Next Lesson (Press Enter)"
+              className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-600 hover:to-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-rose-500/20 active:scale-95"
+              title="Next Adaptive Paragraph (Press Enter)"
             >
-              <span>Next Lesson</span>
+              <span>{currentLesson?.isWeaknessWorkout ? 'Next Paragraph' : 'Next Lesson'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           ) : (
@@ -366,9 +366,9 @@ export default function ResultsModal({
           {hasNextLesson ? (
             <button
               onClick={onNextLesson}
-              className="flex-1 min-w-[170px] py-3.5 px-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-2xl text-base shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 group"
+              className="flex-1 min-w-[170px] py-3.5 px-6 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:from-amber-600 hover:to-purple-700 text-white font-extrabold rounded-2xl text-base shadow-xl shadow-rose-500/30 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 group"
             >
-              <span>Next Lesson</span>
+              <span>{currentLesson?.isWeaknessWorkout ? 'Next Adaptive Paragraph' : 'Next Lesson'}</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               <span className="text-[10px] font-mono font-semibold opacity-75 hidden sm:inline px-1.5 py-0.5 rounded bg-white/20">↵ Enter</span>
             </button>
@@ -463,6 +463,29 @@ export default function ResultsModal({
             <span className="text-lg font-black text-purple-600 dark:text-purple-300 font-mono">{calculatedPoints}</span>
           </div>
         </div>
+
+        {/* Weakness Workout Conquered Summary */}
+        {currentLesson?.isWeaknessWorkout && (
+          <div className="w-full max-w-xl glass-card rounded-2xl p-4 mb-4 border border-amber-500/30 animate-fadeInUp text-center">
+            <div className="text-xs font-black uppercase tracking-wider text-amber-500 dark:text-amber-300 mb-1 flex items-center justify-center gap-1.5">
+              <span>🎯</span>
+              <span>Weakness Workout Conquered!</span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">
+              Targeted fingers trained: <strong className="text-rose-500 dark:text-rose-400 font-bold">{currentLesson.targetFingers?.join(', ')}</strong>
+            </p>
+            {currentLesson.targetWords && currentLesson.targetWords.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-1.5">
+                <span className="text-[11px] text-slate-400 font-bold">Practiced Words:</span>
+                {currentLesson.targetWords.slice(0, 6).map((w) => (
+                  <span key={w} className="px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/5 font-mono text-xs font-bold text-slate-800 dark:text-amber-200 border border-amber-500/20">
+                    {w}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* ─── STICKY BOTTOM ACTION BAR (Guaranteed 100% visible on all screen sizes) ─── */}
