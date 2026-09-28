@@ -1,5 +1,5 @@
-// Typing Club 685-Lesson Authentic Curriculum Generator & Stages
-// Modeled directly on the official Typing Club (Typing Jungle) 685-lesson progression
+// room-no-518: 685-Lesson Touch Typing Curriculum Generator & Stages
+// Progressive touch typing mastery from beginner home row to grandmaster fluency
 
 export const LESSON_STAGES = [
   { id: 1, name: 'Home Row Basics', range: [1, 85], icon: '🏠', description: 'Master F, J, D, K, S, L, A, ; and core home-row words' },
@@ -88,7 +88,7 @@ const NUMBER_STEPS = [
 // 6. Symbols & Code Syntax Drills
 const SYMBOL_STEPS = [
   'Order #1049: 15 items @ $49.99 each = $749.85 (Tax: 8.5%).',
-  'Phone: (555) 234-5678 | Email: student@typingclub.edu [Verified].',
+  'Phone: (555) 234-5678 | Email: student@room518.edu [Verified].',
   'Result = (x + y) * (a - b) / 100; if (count >= 50) return true;',
   'const token = { id: 42, auth: "admin", active: true, balance: $120.00 };',
   'Speed: 100% accuracy & 0 errors! That\'s a 10/10 performance rating!',
@@ -112,10 +112,10 @@ const MASTER_STEPS = [
   'How much wood would a woodchuck chuck if a woodchuck could chuck wood without missing a single beat or hesitating on the home row keys during a 100 WPM speed sprint?',
   'The quick brown fox jumps effortlessly over thirty lazy dogs while dazzling keyboard wizards conquer every single lesson from one to six hundred eighty-five in radiant glory!',
   'Typing with ten fingers at high speeds is an extraordinary blend of muscle memory, visual reflexes, rhythmic breathing, and effortless focus on every keystroke.',
-  'Congratulations! You have reached Lesson 685, the pinnacle of the Typing Club curriculum. You are now officially certified as a Grandmaster Typist with world-class accuracy!'
+  'Congratulations! You have reached Lesson 685, the pinnacle of the room-no-518 curriculum. You are now officially certified as a Grandmaster Typist with world-class accuracy!'
 ];
 
-// Generate Exactly 685 Lessons matching Typing Club's complete curriculum
+// Generate Exactly 685 Lessons for the complete touch typing curriculum
 export function generateAllLessons() {
   const lessons = [];
 
@@ -232,7 +232,7 @@ export function generateAllLessons() {
       const stepIdx = (i - 611) % MASTER_STEPS.length;
       if (i === 685) {
         title = 'Lesson 685: Grandmaster Graduation Exam 👑';
-        text = 'Congratulations! You have conquered all 685 lessons of Typing Club! Your ten fingers now fly across the keyboard with effortless speed, divine precision, and magnificent flow!';
+        text = 'Congratulations! You have conquered all 685 lessons of room-no-518! Your ten fingers now fly across the keyboard with effortless speed, divine precision, and magnificent flow!';
       } else {
         title = `Grandmaster Trial ${i}`;
         text = MASTER_STEPS[stepIdx];
@@ -420,7 +420,7 @@ export const BEAUTY_TIERS = [
   }
 ];
 
-// Keyboard Finger Map (for Typing Club style guide)
+// Keyboard Finger Map (for 10-finger touch typing guide)
 export const KEY_FINGER_MAP = {
   '`': { finger: 'Left Pinky', hand: 'left', color: '#f43f5e' },
   '1': { finger: 'Left Pinky', hand: 'left', color: '#f43f5e' },

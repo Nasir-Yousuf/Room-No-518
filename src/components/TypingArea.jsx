@@ -595,7 +595,7 @@ export default function TypingArea({
                         }}
                       >
                         {isSpace ? '\u00A0' : char}
-                        {/* Authentic TypingClub bright blue underline cursor */}
+                        {/* Bright blue underline cursor */}
                         <span
                           className="absolute -bottom-[3.5px] left-0 right-0 h-[3.5px] bg-[#2563EB] dark:bg-[#38BDF8] rounded-full shadow-[0_1px_3px_rgba(37,99,235,0.4)]"
                         />

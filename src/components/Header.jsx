@@ -2,7 +2,7 @@ import React from 'react';
 import { Menu, RotateCcw, Keyboard, Hand, Volume2, VolumeX, Image as ImageIcon, ImageOff, Zap, Target, Flame, ArrowLeft, Sparkles, Share2, Link2 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
-export default function TypingClubHeader({
+export default function Header({
   lessonTitle,
   lessonNumber,
   onOpenLessons,

@@ -5,7 +5,7 @@ import { BANGLA_STAGES, ALL_BANGLA_LESSONS } from '../data/banglaLessons';
 import ThemeToggle from './ThemeToggle';
 import WeaknessHub from './WeaknessHub';
 
-// Helper component to render icons directly from Typing Club's official svgsprite-cmn.svg
+// Helper component to render icons directly from svgsprite-cmn.svg
 function SpriteIcon({ id, className = "w-[80px] h-[80px] sm:w-[94px] sm:h-[94px]" }) {
   return (
     <svg className={`${className} transition-transform duration-500 ease-out group-hover:scale-105 select-none drop-shadow-md`} viewBox="0 0 100 100">
@@ -15,7 +15,7 @@ function SpriteIcon({ id, className = "w-[80px] h-[80px] sm:w-[94px] sm:h-[94px]
   );
 }
 
-// Authentic Typing Club Padlock for untried lessons
+// Padlock for untried lessons
 function LessonLockIcon() {
   return (
     <div className="h-[38px] sm:h-[44px] mt-1.5 flex items-center justify-center select-none" title="Not typed yet">
@@ -89,7 +89,7 @@ function StarsCluster({ earnedCount = 0, isCurrent = false, isTried = false }) {
     return <LessonLockIcon />;
   }
 
-  // If being tried or completed, show the official Typing Club 5-star arc
+  // If being tried or completed, show the 5-star arc
   const starSrc = count === 0 ? '/stars-0.png' : `/stars-${count}.png`;
 
   return (
@@ -104,7 +104,7 @@ function StarsCluster({ earnedCount = 0, isCurrent = false, isTried = false }) {
   );
 }
 
-// Visual data resolver using Typing Club official SVGs
+// Visual data resolver using SVGs
 function getLessonVisualData(lesson) {
   const num = lesson.number;
 
@@ -174,7 +174,7 @@ function BackgroundParticles() {
   );
 }
 
-export default function TypingClubLessonMap({
+export default function LessonMap({
   currentLessonNumber,
   onSelectLesson,
   onBackToTyping,
@@ -269,7 +269,7 @@ export default function TypingClubLessonMap({
                 ? 'Adaptive Weakness AI • Smart Paragraphs'
                 : language === 'bn'
                 ? 'অভ্র ফোনেটিক • ৮০ Lessons'
-                : 'Typing Club • 685 Lessons'}
+                : 'Touch Typing • 685 Lessons'}
             </p>
           </div>
         </div>

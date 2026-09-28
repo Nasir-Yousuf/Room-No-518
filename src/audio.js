@@ -39,7 +39,7 @@ function getTypewriterNoise(ctx) {
   return typewriterNoiseBuffer;
 }
 
-// Authentic Typing Club Typewriter Sound Synthesizer
+// Typewriter & Key Click Sound Synthesizer
 export function playKeyClick(isSpace = false) {
   if (!soundEnabled) return;
   try {

@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ALL_685_LESSONS, ALL_500_LESSONS, BEAUTY_TIERS } from './data/lessons';
 import { ALL_BANGLA_LESSONS, BANGLA_STAGES } from './data/banglaLessons';
 import { transliterateAvro, checkAvroWordMatch } from './utils/avroPhonetic';
-import TypingClubHeader from './components/TypingClubHeader';
+import Header from './components/Header';
 import TypingArea from './components/TypingArea';
 import VirtualKeyboard from './components/VirtualKeyboard';
 import ResultsModal from './components/ResultsModal';
-import TypingClubLessonMap from './components/TypingClubLessonMap';
+import LessonMap from './components/LessonMap';
 import CustomAvatarModal from './components/CustomAvatarModal';
 import ShareToast from './components/ShareToast';
 import WeaknessWorkoutBar from './components/WeaknessWorkoutBar';
@@ -60,7 +60,7 @@ export default function App() {
   // Check URL on startup for deep links (e.g. ?lesson=183 or #lesson-183)
   const initialUrlLesson = useRef(getLessonFromUrl(ALL_685_LESSONS)).current;
 
-  // Navigation View: 'lessons' (Typing Club curriculum page by default) | 'typing' (main typing arena)
+  // Navigation View: 'lessons' (Curriculum page by default) | 'typing' (main typing arena)
   const [currentView, setCurrentView] = useState(() => {
     if (initialUrlLesson) return 'typing';
     try {
@@ -484,14 +484,14 @@ export default function App() {
     else handleSelectLanguage('en');
   };
 
-  // Inject Typing Club SVG Sprite on initial mount for instant zero-latency vector rendering
+  // Inject SVG Sprite on initial mount for instant zero-latency vector rendering
   useEffect(() => {
     fetch('/svgsprite-cmn.svg')
       .then((res) => res.text())
       .then((svgText) => {
-        if (!document.getElementById('typingclub-svg-sprite')) {
+        if (!document.getElementById('room518-svg-sprite')) {
           const div = document.createElement('div');
-          div.id = 'typingclub-svg-sprite';
+          div.id = 'room518-svg-sprite';
           div.style.display = 'none';
           div.innerHTML = svgText;
           document.body.appendChild(div);
@@ -809,11 +809,11 @@ export default function App() {
     (t) => glamourScore >= t.minScore && glamourScore <= t.maxScore
   ) || BEAUTY_TIERS[2];
 
-  // If in Lessons Map View, render the full-screen Typing Club Curriculum Page
+  // If in Lessons Map View, render the full-screen Curriculum Page
   if (currentView === 'lessons') {
     return (
       <>
-        <TypingClubLessonMap
+        <LessonMap
           currentLessonNumber={currentLesson.number}
           onSelectLesson={handleSelectLesson}
           onBackToTyping={() => {
@@ -855,8 +855,8 @@ export default function App() {
         />
       </div>
 
-      {/* Typing Club Header */}
-      <TypingClubHeader
+      {/* Header */}
+      <Header
         lessonTitle={currentLesson.title}
         lessonNumber={currentLesson.number}
         onOpenLessons={() => setCurrentView('lessons')}

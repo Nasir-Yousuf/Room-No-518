@@ -283,7 +283,7 @@ export default function ResultsModal({
           </span>
         </div>
 
-        {/* Stars Arc (Typing Club Official) */}
+        {/* 5-Star Arc */}
         <div className="flex items-center justify-center mb-6 animate-scale-in">
           <img
             src={`/stars-${stars}.png`}

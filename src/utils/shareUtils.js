@@ -1,4 +1,4 @@
-// Deep Linking & Share Utilities for Typing Club 685 Lessons
+// Deep Linking & Share Utilities for room-no-518 Lessons
 
 export function getLessonFromUrl(lessonsList) {
   try {
@@ -39,11 +39,11 @@ export function getShareUrl(lessonNumber) {
 
 export async function shareLesson({ lessonNumber, lessonTitle, wpm, accuracy, onToast }) {
   const url = getShareUrl(lessonNumber);
-  const title = `Lesson ${lessonNumber}: ${lessonTitle || 'Typing Drill'} | Typing Club`;
+  const title = `Lesson ${lessonNumber}: ${lessonTitle || 'Typing Drill'} | room-no-518`;
   
-  let shareText = `Practice Lesson ${lessonNumber} (${lessonTitle || 'Typing Drill'}) on Room 518 Typing Club!`;
+  let shareText = `Practice Lesson ${lessonNumber} (${lessonTitle || 'Typing Drill'}) on room-no-518!`;
   if (wpm !== undefined && accuracy !== undefined) {
-    shareText = `🏆 I typed Lesson ${lessonNumber} at ${wpm} WPM with ${accuracy}% accuracy on Typing Club! Can you beat my score?`;
+    shareText = `🏆 I typed Lesson ${lessonNumber} at ${wpm} WPM with ${accuracy}% accuracy on room-no-518! Can you beat my score?`;
   }
 
   // Attempt Web Share API first on supported mobile devices
